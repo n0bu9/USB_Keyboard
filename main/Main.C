@@ -12,7 +12,8 @@
 ********************************************************************************/
 #include "CH554.H"                                                   
 #include "Debug.H"
-#include "GPIO.H"
+#include "gpio.h"
+#include "timer.h"
 #include "stdio.h"
 #include <string.h>
 
@@ -27,16 +28,26 @@ void main( )
     mDelaymS(20);
     mInitSTDIO( );                                                             //串口0初始化
     printf("start ...\n"); 
-    Port1Cfg(1,6);                                                             //P16设置推挽模式
-    Port1Cfg(1,7);                                                             //P17设置推挽模式
-    LED0 = 0;	
+    Port3Cfg(1,0);  
+    mTimer0Clk12DivFsys();                                                     //Timer0时钟选择
+    mTimer_x_ModInit(0,1);                                                     //Timer0设置为16位定时器
+    mTimer_x_SetData(0,8000);                                                  //设置定时器0初值 = 1ms
+    ET0 = 1;                                                                   //开启定时器0中断
+	EA = 1;                                                                    //开启总中断                 
 
-    GPIOInterruptCfg();                                                        //GPIO中断配置函数	
-    EA = 1;
+    mTimer0RunCTL(1);
+    LED0 = 0;
     printf("Run"); 
     while(1){
 //      printf(".");
-      LED0 = ~LED0;		
+    //   LED0 = ~LED0;		
       mDelaymS(100);			
     }
+}
+
+void mTimer0Interrupt( void ) interrupt INT_NO_TMR0 using 1                //timer0中断服务程序,使用寄存器组1
+{
+    mTimer_x_SetData(0,8000);                                                  //设置定时器0初值 = 1ms                                                                           //方式3时，TH0使用Timer1的中断资源
+    LED0 = ~LED0;	
+//     mTimer_x_SetData(0,0x0000);                                          //非自动重载方式需重新给TH0和TL0赋值      
 }
