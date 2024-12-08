@@ -27,7 +27,6 @@ void main( )
     CfgFsys( );                                                                //CH554时钟选择配置   
     mDelaymS(20);                                                              //修改主频，建议稍加延时等待主频稳定
     mInitSTDIO( );                                                             //串口0初始化
-    //printf("start ...\n"); 
     Port3Cfg(1,0);  
     mTimer0Clk12DivFsys();                                                      //Timer0时钟选择
     mTimer_x_ModInit(0,1);                                                     //Timer0设置为16位定时器
