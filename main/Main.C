@@ -25,29 +25,31 @@ void main( )
 {
     UINT16 j = 0;
     CfgFsys( );                                                                //CH554时钟选择配置   
-    mDelaymS(20);
+    mDelaymS(20);                                                              //修改主频，建议稍加延时等待主频稳定
     mInitSTDIO( );                                                             //串口0初始化
-    printf("start ...\n"); 
+    //printf("start ...\n"); 
     Port3Cfg(1,0);  
-    mTimer0Clk12DivFsys();                                                     //Timer0时钟选择
+    mTimer0Clk12DivFsys();                                                      //Timer0时钟选择
     mTimer_x_ModInit(0,1);                                                     //Timer0设置为16位定时器
-    mTimer_x_SetData(0,8000);                                                  //设置定时器0初值 = 1ms
+    mTimer_x_SetData(0,500);                                                  //设置定时器0初值 = 1ms
     ET0 = 1;                                                                   //开启定时器0中断
 	EA = 1;                                                                    //开启总中断                 
 
     mTimer0RunCTL(1);
     LED0 = 0;
-    printf("Run"); 
-    while(1){
-//      printf(".");
-    //   LED0 = ~LED0;		
+    printf("Run\n"); 
+    while(1){		
       mDelaymS(100);			
     }
 }
 
-void mTimer0Interrupt( void ) interrupt INT_NO_TMR0 using 1                //timer0中断服务程序,使用寄存器组1
+void mTimer0Interrupt( void ) interrupt INT_NO_TMR0 using 1     //1MS         //timer0中断服务程序,使用寄存器组1
 {
-    mTimer_x_SetData(0,8000);                                                  //设置定时器0初值 = 1ms                                                                           //方式3时，TH0使用Timer1的中断资源
-    LED0 = ~LED0;	
-//     mTimer_x_SetData(0,0x0000);                                          //非自动重载方式需重新给TH0和TL0赋值      
+    static UINT16 count = 0;
+    if (count++ == 500){ 
+        count = 0;
+        LED0 = ~LED0;
+    }
+    TF0 = 0;                                                                   //清除定时器0中断标志
+    mTimer_x_SetData(0,500);                                                  //设置定时器0初值 = 1ms 
 }
