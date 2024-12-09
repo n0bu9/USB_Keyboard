@@ -52,3 +52,4 @@ void mTimer0Interrupt( void ) interrupt INT_NO_TMR0 using 1     //1MS         //
     TF0 = 0;                                                                   //清除定时器0中断标志
     mTimer_x_SetData(0,500);                                                  //设置定时器0初值 = 1ms 
 }
+
