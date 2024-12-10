@@ -377,19 +377,24 @@
           <GroupName>Main</GroupName>
           <Files>
             <File>
-              <FileName>GPIO.C</FileName>
+              <FileName>gpio.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\main\GPIO.C</FilePath>
+              <FilePath>.\main\gpio.c</FilePath>
             </File>
             <File>
-              <FileName>Main.C</FileName>
+              <FileName>keyboard.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\main\Main.C</FilePath>
+              <FilePath>.\main\keyboard.c</FilePath>
+            </File>
+            <File>
+              <FileName>main.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\main\main.c</FilePath>
             </File>
             <File>
               <FileName>timer.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\main\timer.c</FilePath>
+              <FilePath>.\main\timer.c</FilePath>
             </File>
           </Files>
         </Group>

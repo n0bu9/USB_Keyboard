@@ -1,5 +1,20 @@
-Project/*
+# 忽略文件
 .vscode/
+CH554.*
+Debug.*
+GPIO.*
+Keyboard.*
+Keyboard
+main.*
+Target 1.*
+timer.*
+USBHostHUB_KM
+USBHostHUB_KM.*
 
-!Project/Keyboard.hex
-!Project/CH554.uvproj
+# 不忽略文件
+!*.h
+!*.c
+!*.hex
+!*.uvproj
+!README.md
+

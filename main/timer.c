@@ -11,7 +11,7 @@
 * Attention: This software (modified or not) and binary are used for 
 * microcontroller manufactured by Nanjing Qinheng Microelectronics.
 ********************************************************************************/
-#include "CH554.H"                                                  
+#include "main.h"                                                  
 #include "Debug.H"
 #include "timer.h" 
 #include "stdio.h"

@@ -67,10 +67,10 @@ extern UINT16 Cap[8];
 UINT8 mTimer_x_ModInit(UINT8 x ,UINT8 mode);
 
 /*******************************************************************************
-* Function Name  : mTimer_x_SetData(UINT8 x,UINT16 dat)
+* Function Name  : mTimer_x_SetData
 * Description    : CH554Timer 
-* Input          : UINT16 dat;定时器赋值
-                   UINT8 x 定时器  0 1 2
+* Input          : UINT8 x,定时器 0 1 2
+                   UINT16 dat,定时器赋值
 * Output         : None
 * Return         : None
 *******************************************************************************/
