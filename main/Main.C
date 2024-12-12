@@ -31,11 +31,12 @@ void main( )
     Port3Cfg(1,0);  
     mTimer0Clk12DivFsys();                                                      //Timer0时钟选择
     mTimer_x_ModInit(0,1);                                                     //Timer0设置为16位定时器
-    mTimer_x_SetData(0,500);                                                  //设置定时器0初值 = 1ms
+    mTimer_x_SetData(0,1000);                                                  //设置定时器0初值 = 1ms
     ET0 = 1;                                                                   //开启定时器0中断
 	EA = 1;                                                                    //开启总中断                 
 
     mTimer0RunCTL(1);
+    keyboard_init();
     LED0 = 0;
     printf("Run\n"); 
     while(1){		
@@ -51,6 +52,6 @@ void mTimer0Interrupt( void ) interrupt INT_NO_TMR0 using 1     //1MS         //
         LED0 = ~LED0;
     }
     TF0 = 0;                                                                   //清除定时器0中断标志
-    mTimer_x_SetData(0,500);                                                  //设置定时器0初值 = 1ms 
+    mTimer_x_SetData(0,1000);                                                  //设置定时器0初值 = 1ms 
 }
 

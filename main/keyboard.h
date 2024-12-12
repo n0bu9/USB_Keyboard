@@ -3,4 +3,6 @@
 
 #include "main.h"
 
+void keyboard_init(void);
+
 #endif
