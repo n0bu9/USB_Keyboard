@@ -14,6 +14,7 @@
 #include "gpio.h"
 #include "timer.h"
 #include "keyboard.h"
+#include "basic.h"
 
 #include "stdio.h"
 #include <string.h>
@@ -22,6 +23,16 @@
 
 sbit LED0 = P3^0;
 
+void led_flash(void)
+{
+    static UINT16 led_count = timer_read();
+
+    if(timer_elapsed(led_count) > 500) {
+        LED0 = !LED0;
+        led_count = timer_read();
+    }
+}
+
 void main( ) 
 {
     UINT16 j = 0;
@@ -29,10 +40,7 @@ void main( )
     mDelaymS(20);                                                              //修改主频，建议稍加延时等待主频稳定
     mInitSTDIO( );                                                             //串口0初始化
     Port3Cfg(1,0);  
-    mTimer0Clk12DivFsys();                                                      //Timer0时钟选择
-    mTimer_x_ModInit(0,1);                                                     //Timer0设置为16位定时器
-    mTimer_x_SetData(0,1000);                                                  //设置定时器0初值 = 1ms
-    ET0 = 1;                                                                   //开启定时器0中断
+    basic_init();   
 	EA = 1;                                                                    //开启总中断                 
 
     mTimer0RunCTL(1);
@@ -40,18 +48,7 @@ void main( )
     LED0 = 0;
     printf("Run\n"); 
     while(1){		
-      mDelaymS(100);			
+      	led_flash();	
     }
-}
-
-void mTimer0Interrupt( void ) interrupt INT_NO_TMR0 using 1     //1MS         //timer0中断服务程序,使用寄存器组1
-{
-    static UINT16 count = 0;
-    if (count++ == 500){ 
-        count = 0;
-        LED0 = ~LED0;
-    }
-    TF0 = 0;                                                                   //清除定时器0中断标志
-    mTimer_x_SetData(0,1000);                                                  //设置定时器0初值 = 1ms 
 }
 

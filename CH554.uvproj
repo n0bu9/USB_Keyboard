@@ -52,7 +52,7 @@
           <CreateHexFile>1</CreateHexFile>
           <DebugInformation>1</DebugInformation>
           <BrowseInformation>1</BrowseInformation>
-          <ListingPath>.\</ListingPath>
+          <ListingPath>.\main\</ListingPath>
           <HexFormatSelection>0</HexFormatSelection>
           <Merge32K>0</Merge32K>
           <CreateBatchFile>1</CreateBatchFile>
@@ -395,6 +395,11 @@
               <FileName>timer.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\main\timer.c</FilePath>
+            </File>
+            <File>
+              <FileName>basic.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\main\basic.c</FilePath>
             </File>
           </Files>
         </Group>
