@@ -25,5 +25,7 @@ typedef enum {
 } KEY_t;
 
 void keyboard_init(void);
+void keyboard_test_init(void);
+uint8_t keyboard_test_scan(void);
 
 #endif

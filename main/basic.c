@@ -1,7 +1,7 @@
 #include "basic.h"
 #include "timer.h"
 
-UINT32 volatile data timer_count = 0;
+UINT32 data timer_count = 0;
 
 void basic_init(void) 
 {
@@ -14,7 +14,7 @@ void basic_init(void)
 }
 
 // 清除定时器0计数
-inline void timer_clear(void)
+void timer_clear(void)
 {
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
         timer_count = 0;
@@ -22,7 +22,8 @@ inline void timer_clear(void)
 }
 
 // 以16位读取定时器0计数
-inline uint16_t timer_read(void) {
+uint16_t timer_read(void) 
+{
     uint32_t t;
 
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
@@ -33,7 +34,7 @@ inline uint16_t timer_read(void) {
 }
 
 // 以32位读取定时器0计数
-inline uint32_t timer_read32(void) {
+uint32_t timer_read32(void) {
     uint32_t t;
 
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
@@ -44,7 +45,8 @@ inline uint32_t timer_read32(void) {
 }
 
 // 以16位读取定时器0计数
-inline uint16_t timer_elapsed(uint16_t last) {
+uint16_t timer_elapsed(uint16_t last) 
+{
     uint32_t t;
 
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
@@ -55,7 +57,8 @@ inline uint16_t timer_elapsed(uint16_t last) {
 }
 
 // 以32位读取定时器0计数
-inline uint32_t timer_elapsed32(uint32_t last) {
+uint32_t timer_elapsed32(uint32_t last) 
+{
     uint32_t t;
 
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {

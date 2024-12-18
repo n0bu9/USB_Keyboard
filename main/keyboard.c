@@ -1,6 +1,7 @@
 #include "keyboard.h"
 #include "gpio.h"                                               
 #include "Debug.H"
+#include "stdio.h"
 
 #pragma  NOAREGS
 
@@ -12,7 +13,7 @@ sbit KEY_IO5 = P1^0;
 
 static volatile UINT8 key_state[KEY_NUM];
 
-void keyboard_init() {
+void keyboard_init(void) {
     // Initialize the keyboard
     // 开漏输入输出，有上拉
     Port1Cfg(3,2);  // KEY_IO1
@@ -22,7 +23,7 @@ void keyboard_init() {
     Port1Cfg(3,0);  // KEY_IO5
 }
 
-void keyboard_scan() {
+void keyboard_scan(void) {
     // 扫描键盘
     KEY_IO1 = 1;KEY_IO2 = 1;KEY_IO3 = 1;KEY_IO4 = 1;KEY_IO5 = 1;
     {
@@ -135,4 +136,24 @@ void keyboard_scan() {
         }
         KEY_IO5 = 1;
     }   
+}
+
+sbit KEY_TEST = P3^6;
+
+void keyboard_test_init(void) 
+{
+    Port3Cfg(0, 6);
+}
+
+uint8_t keyboard_test_scan(void) 
+{
+    static uint8_t key_flag = 0;
+    if (KEY_TEST == 1) {
+        key_flag = 1;
+    }
+    else if (key_flag == 1 && KEY_TEST == 0) {
+        key_flag = 0;
+        return 1;
+    }
+    return 0;
 }
