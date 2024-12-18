@@ -1,0 +1,40 @@
+C51 COMPILER V9.60.7.0   IAP                                                               12/19/2024 01:15:45 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE IAP
+OBJECT MODULE PLACED IN iap.obj
+COMPILER INVOKED BY: D:\keil_c51\C51\BIN\C51.EXE main\iap.c LARGE OPTIMIZE(8,SPEED) BROWSE NOAREGS INCDIR(.\main;.\Publi
+                    -c) DEBUG OBJECTEXTEND PRINT(.\main\iap.lst) TABS(2) OBJECT(iap.obj)
+
+line level    source
+
+   1          #include "iap.h"
+   2          #include "Debug.H"
+   3          
+   4          typedef void( *pTaskFn)( void );
+   5          pTaskFn tasksArr[1];
+   6          
+   7          void iap_run(void)
+   8          {
+   9   1          EA = 0;                                                                    //关闭总中断，必加
+  10   1        tasksArr[0] = BOOT_ADDR;
+  11   1          mDelaymS(100);
+  12   1          P3_6 = 1;
+  13   1          (tasksArr[0])( );                                                          //跳至BOOT升级程序,�
+             -�用ISP工具升级
+  14   1          while(1);
+  15   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     36    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =      3    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

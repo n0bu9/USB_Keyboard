@@ -1,0 +1,1 @@
+"main\iap.c" LARGE OPTIMIZE (8,SPEED) BROWSE NOAREGS INCDIR(.\main;.\Public) DEBUG OBJECTEXTEND PRINT(.\main\iap.lst) TABS (2) OBJECT(iap.obj)

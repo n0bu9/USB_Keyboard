@@ -1,4 +1,4 @@
-C51 COMPILER V9.60.7.0   BASIC                                                             12/18/2024 20:07:43 PAGE 1   
+C51 COMPILER V9.60.7.0   BASIC                                                             12/19/2024 01:15:45 PAGE 1   
 
 
 C51 COMPILER V9.60.7.0, COMPILATION OF MODULE BASIC
@@ -62,7 +62,7 @@ line level    source
   50   1          uint32_t t;
   51   1      
   52   1          ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
-C51 COMPILER V9.60.7.0   BASIC                                                             12/18/2024 20:07:43 PAGE 2   
+C51 COMPILER V9.60.7.0   BASIC                                                             12/19/2024 01:15:45 PAGE 2   
 
   53   2              t = timer_count;
   54   2          }
