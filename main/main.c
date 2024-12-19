@@ -15,6 +15,7 @@
 #include "keyboard.h"
 #include "basic.h"
 #include "iap.h"
+#include "main.h"
 
 #include "stdio.h"
 #include <string.h>
@@ -64,7 +65,7 @@ void keyboard_test(void)
     }
     if (timer_elapsed(keyboard_count) > 50) {
         if (keyboard_test_scan()) {
-            iap_run();
+            iap_app();
         }
         keyboard_count = timer_read();
     }
