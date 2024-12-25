@@ -1,0 +1,1 @@
+$\frac{x}{10+x}\times[4.5-(\frac{x}{10+x}\times4.5+0.5)]+0.5+\frac{x}{10+x}\times4.5+0.5=2.4$
