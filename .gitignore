@@ -10,6 +10,7 @@ Target 1.*
 timer.*
 USBHostHUB_KM
 USBHostHUB_KM.*
+.main/*.lst
 
 # 不忽略文件
 !*.h
