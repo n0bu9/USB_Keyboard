@@ -2,6 +2,7 @@
 #include "gpio.h"                                               
 #include "Debug.H"
 #include "stdio.h"
+#include "string.h"
 
 #pragma  NOAREGS
 
@@ -11,7 +12,7 @@ sbit KEY_IO3 = P3^5;
 sbit KEY_IO4 = P3^3;
 sbit KEY_IO5 = P1^0;
 
-static volatile UINT8 key_state[KEY_NUM];
+static volatile uint8_t key_state[KEY_NUM];
 
 void keyboard_init(void) {
     // Initialize the keyboard
@@ -138,22 +139,29 @@ void keyboard_scan(void) {
     }   
 }
 
-sbit KEY_TEST = P3^6;
+void keyboard_get_state(uint8_t *state) {
+    memcpy(state, key_state, KEY_NUM);
+}
 
 void keyboard_test_init(void) 
 {
-    Port3Cfg(0, 6);
+    Port1Cfg(3,2);  // KEY_IO1
+    Port1Cfg(3,3);  // KEY_IO2
+    Port3Cfg(3,5);  // KEY_IO3
+    Port3Cfg(3,3);  // KEY_IO4
+    KEY_IO4 = 0;
+    KEY_IO2 = KEY_IO3 = KEY_IO1 = 1;
 }
 
-uint8_t keyboard_test_scan(void) 
-{
-    static uint8_t key_flag = 0;
-    if (KEY_TEST == 1) {
-        key_flag = 1;
-    }
-    else if (key_flag == 1 && KEY_TEST == 0) {
-        key_flag = 0;
-        return 1;
-    }
-    return 0;
-}
+// uint8_t keyboard_test_scan(void) 
+// {
+//     static uint8_t key_flag = 0;
+//     if (KEY_TEST == 1) {
+//         key_flag = 1;
+//     }
+//     else if (key_flag == 1 && KEY_TEST == 0) {
+//         key_flag = 0;
+//         return 1;
+//     }
+//     return 0;
+// }

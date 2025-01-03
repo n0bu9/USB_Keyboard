@@ -35,10 +35,10 @@
 #define  STOP    0
 #endif
 
-#define	 FREQ_SYS	   6000000	         //系统主频6MHz
-#define  OSC_EN_XT     1                 //外部晶振使能，默认开启内部晶振
+#define	 FREQ_SYS	   12000000	         //系统主频6MHz
+#define  OSC_EN_XT     0                 //外部晶振使能，默认开启内部晶振
 #ifndef  UART0_BUAD
-#define  UART0_BUAD    57600
+#define  UART0_BUAD    9600
 #define  UART1_BUAD    57600
 #endif
 #ifndef  DE_PRINTF                      //程序Pirntf输出开启

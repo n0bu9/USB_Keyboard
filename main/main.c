@@ -34,7 +34,7 @@ void led_flash(void)
         is_init = 0;
     }
 
-    if(timer_elapsed(led_count) > 500) {
+    if(timer_elapsed(led_count) > 1000) {
         LED0 = !LED0;
         led_count = timer_read();
     }
@@ -58,14 +58,19 @@ void keyboard_test(void)
 {
     static uint16_t keyboard_count = 0;
     static uint8_t is_init = 1;   // 添加初始化标志
+    uint8_t key_state[KEY_NUM];
+    uint8_t i;
 
     if (is_init) {
         keyboard_count = timer_read();
         is_init = 0;
     }
     if (timer_elapsed(keyboard_count) > 50) {
-        if (keyboard_test_scan()) {
-            iap_app();
+        keyboard_get_state(key_state);
+        for (i = 0; i < KEY_NUM; i++) {
+            if (key_state[i] == 1) {
+                printf("Key %d is pressed\n", i);
+            }
         }
         keyboard_count = timer_read();
     }
@@ -82,13 +87,17 @@ void main( )
 	EA = 1;                                                                    //开启总中断
 
     mTimer0RunCTL(1);
-    keyboard_test_init();
+    //keyboard_init();
     LED0 = 0;
+    keyboard_test_init();
     printf("Run\n");
     while(1){
-      	led_flash();
-        keyboard_test();
-        uart_debug();
+      	// led_flash();
+        // keyboard_test();
+        // keyboard_scan();
+        // uart_debug();
+
     }
 }
+
 

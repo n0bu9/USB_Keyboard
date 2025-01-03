@@ -9,7 +9,7 @@ void basic_init(void)
     mTimer0Clk12DivFsys();                                                      //Timer0时钟选择
     mTimer_x_ModInit(0,1);                                                     //Timer0设置为16位定时器
     mTimer_x_SetData(0,1000);                                                  //设置定时器0初值 = 1ms
-    ET0 = 1;                                                                    //开启定时器0中断
+    ET0 = 1;                                                                   //开启定时器0中断
 
 }
 
