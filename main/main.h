@@ -3,6 +3,8 @@
 
 #include "CH554.H"
 
+#define DEBUG   1
+
 #define uint32_t UINT32
 #define uint16_t UINT16
 #define uint8_t  UINT8

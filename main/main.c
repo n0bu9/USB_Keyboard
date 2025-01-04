@@ -16,7 +16,7 @@
 #include "basic.h"
 #include "iap.h"
 #include "main.h"
-
+#include "usb_hid.h"
 #include "stdio.h"
 #include <string.h>
 
@@ -32,6 +32,7 @@ void led_flash(void)
     if(is_init) {                 // 首次运行时初始化
         led_count = timer_read();
         is_init = 0;
+        LED0 = 0;
     }
 
     if(timer_elapsed(led_count) > 1000) {
@@ -48,7 +49,7 @@ void uart_debug(void) {
         uart_count = timer_read();
         is_init = 0;
     }
-    if (timer_elapsed(uart_count) > 700) {
+    if (timer_elapsed(uart_count) > 20) {
         //printf("P36 Pin Level: %d\n", P3^6);
         uart_count = timer_read();
     }
@@ -81,22 +82,20 @@ void main( )
     UINT16 j = 0;
     CfgFsys( );                                                                //CH554时钟选择配置
     mDelaymS(20);                                                              //修改主频，建议稍加延时等主频稳定
-    mInitSTDIO( );                                                             //串口0初始化
-    Port3Cfg(1,0);
-    basic_init();
+    usb_device_init();                                                         //USB设备初始化                  
+    uart0_init();                                                              //串口0初始化
+    basic_init();                                                              //基本外设初始化
 	EA = 1;                                                                    //开启总中断
 
-    mTimer0RunCTL(1);
-    //keyboard_init();
-    LED0 = 0;
-    keyboard_test_init();
+    mTimer0RunCTL(1);                                                          //启动定时器0
+    usb_clear_flag();                                                          //清除USB设备状态
     printf("Run\n");
     while(1){
       	// led_flash();
         // keyboard_test();
         // keyboard_scan();
         // uart_debug();
-
+        hid_value_handle();
     }
 }
 

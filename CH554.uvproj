@@ -459,6 +459,11 @@
               <FileType>1</FileType>
               <FilePath>.\main\iap.c</FilePath>
             </File>
+            <File>
+              <FileName>usb_hid.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\main\usb_hid.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
