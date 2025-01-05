@@ -2,14 +2,17 @@
 #include "main.h"
 #include "basic.h"
 #include "string.h"
+#include "stdio.h"
+#include "Debug.h"
 
 #define THIS_ENDP0_SIZE         DEFAULT_ENDP0_SIZE
 #define BUFMAX 16
+#pragma  NOAREGS
 
-uint8_t Ep0Buffer[8>(THIS_ENDP0_SIZE+2)?8:(THIS_ENDP0_SIZE+2)] _at_ 0x0000;    //端点0 OUT&IN缓冲区，必须是偶地址
-uint8_t Ep1Buffer[64>(MAX_PACKET_SIZE+2)?64:(MAX_PACKET_SIZE+2)] _at_ 0x000a;  //端点1 OUT&IN缓冲区，必须是偶地址
+static uint8_t xdata Ep0Buffer[8>(THIS_ENDP0_SIZE+2)?8:(THIS_ENDP0_SIZE+2)] _at_ 0x0000;    //端点0 OUT&IN缓冲区，必须是偶地址
+static uint8_t xdata Ep1Buffer[64>(MAX_PACKET_SIZE+2)?64:(MAX_PACKET_SIZE+2)] _at_ 0x000a;  //端点1 OUT&IN缓冲区，必须是偶地址
 
-uint8_t hid_report_descriptor[] = {
+uint8_t hid_report_descriptor[62] = {
     0x05,0x01,0x09,0x06,0xA1,0x01,0x05,0x07,
     0x19,0xe0,0x29,0xe7,0x15,0x00,0x25,0x01,
     0x75,0x01,0x95,0x08,0x81,0x02,0x95,0x01,
@@ -28,8 +31,8 @@ uint8_t device_descriptor[18] = {
     0x00, // 设备子类代码(bDeviceSubClass)
     0x00, // 设备协议代码(bDeviceProtocol)
     DEFAULT_ENDP0_SIZE, // 端点0的最大包大小(bMaxPacketSize0)
-    0x00,0x00, // 厂商编号(idVendor)
-    0x00,0x00, // 产品编号(idProduct)
+    0x3d,0x41, // 厂商编号(idVendor)
+    0x07,0x21, // 产品编号(idProduct)
     0x00,0x00, // 设备出厂编号(bcdDevice)
     0x00, // 制造商字符串索引(iManufacturer)
     0x00, // 产品字符串索引(iProduct)
@@ -75,15 +78,15 @@ uint8_t config_descriptor[34] = {
 };
 
 /*键盘数据*/
-uint8_t HIDKey[9] = {0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0};
+static uint8_t HIDKey[8] = {0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0};
 static uint8_t data_buf[BUFMAX] = {0};
 static uint16_t data_len = 0;
 static uint16_t send_point = 0;
 static uint16_t recv_point = 0;
-uint8_t SetupReq = 0,SetupLen = 0,Ready = 0,Count = 0,FLAG = 0,UsbConfig = 0;
-uint8_t LED_VALID = 0;
-uint8_t *pDescr; // USB配置标志
-USB_SETUP_REQ   SetupReqBuf; // 暂存Setup包
+static uint8_t SetupReq = 0,SetupLen = 0,Ready = 0,Count = 0,FLAG = 0,UsbConfig = 0;
+static uint8_t LED_VALID = 0;
+static uint8_t *pDescr; // USB配置标志
+static USB_SETUP_REQ   SetupReqBuf; // 暂存Setup包
 
 
 #define UsbSetupBuf     ((PUSB_SETUP_REQ)Ep0Buffer)
@@ -100,9 +103,9 @@ void usb_device_init(void)
 	USB_CTRL = 0x00;                                                           // 先设定USB设备模式
     UEP0_DMA = Ep0Buffer;                                                      //端点0数据传输地址
     UEP1_DMA = Ep1Buffer;                                                      //端点1数据传输地址
-    UEP4_1_MOD = ~(bUEP4_RX_EN | bUEP4_TX_EN | bUEP1_RX_EN | bUEP1_BUF_MOD);   //端点1单64字节收发缓冲区,端点0收发
+    UEP4_1_MOD = ~(bUEP4_RX_EN | bUEP4_TX_EN | bUEP1_RX_EN | bUEP1_BUF_MOD) | bUEP4_TX_EN;;   //端点1单64字节收发缓冲区,端点0收发
     UEP0_CTRL = UEP_R_RES_ACK | UEP_T_RES_NAK;                                 //OUT事务返回ACK，IN事务返回NAK
-    UEP1_CTRL = UEP_T_RES_ACK | UEP_R_RES_NAK;                                 //IN事务返回NAK，OUT事务返回ACK
+    UEP1_CTRL = bUEP_T_TOG | UEP_T_RES_NAK;                                 //IN事务返回NAK，OUT事务返回ACK
 		
     USB_DEV_AD = 0x00;
     UDEV_CTRL = bUD_PD_DIS;                                                    // 禁止DP/DM下拉电阻
@@ -131,25 +134,42 @@ void enp1_in_evt(void)
 * Function Name  : device_interrupt()
 * Description    : CH554USB中断处理函数
 *******************************************************************************/
-void device_interrupt(void) interrupt INT_NO_USB using 2                        //USB中断服务程序,使用寄存器组1
+void device_interrupt(void) interrupt INT_NO_USB using 1                        //USB中断服务程序,使用寄存器组1
 {
-    UINT8 len;
+    uint8_t len;
+    #if DEBUG_USB_ISR
+        CH554UART0SendByte('1');
+        CH554UART0SendByte(USB_INT_ST);
+    #endif
     if(UIF_TRANSFER)                                                            //USB传输完成标志
     {
+        #if DEBUG_USB_ISR
+            CH554UART0SendByte('2');
+            CH554UART0SendByte(UIF_TRANSFER);
+        #endif
         switch (USB_INT_ST & (MASK_UIS_TOKEN | MASK_UIS_ENDP))
         {
         case UIS_TOKEN_IN | 2:                                                  //endpoint 2# 中断端点上传
+            #if DEBUG_USB_ISR
+                CH554UART0SendByte('3');
+            #endif
             UEP2_T_LEN = 0;                                                     //预使用发送长度一定要清空
 //            UEP1_CTRL ^= bUEP_T_TOG;                                          //如果不设置自动翻转则需要手动翻转
             UEP2_CTRL = UEP2_CTRL & ~ MASK_UEP_T_RES | UEP_T_RES_NAK;           //默认应答NAK
             break;
         case UIS_TOKEN_IN | 1:                                                  //endpoint 1# 中断端点上传
+            #if DEBUG_USB_ISR
+                CH554UART0SendByte('4');
+            #endif
             UEP1_T_LEN = 0;                                                     //预使用发送长度一定要清空
 //            UEP2_CTRL ^= bUEP_T_TOG;                                          //如果不设置自动翻转则需要手动翻转
             UEP1_CTRL = UEP1_CTRL & ~ MASK_UEP_T_RES | UEP_T_RES_NAK;           //默认应答NAK
             FLAG = 1;                                                           /*传输完成标志*/
             break;
         case UIS_TOKEN_SETUP | 0:                                                //SETUP事务
+            #if DEBUG_USB_ISR
+                CH554UART0SendByte('5');
+            #endif
             len = USB_RX_LEN;
             if(len == (sizeof(USB_SETUP_REQ)))
             {
@@ -219,7 +239,7 @@ void device_interrupt(void) interrupt INT_NO_USB using 2                        
                             SetupLen = len;    //限制总长度
                         }
                         len = SetupLen >= 8 ? 8 : SetupLen;                  //本次传输长度
-                        memcpy(Ep0Buffer,pDescr,len);                        //加载上传数据
+                        memcpy(Ep0Buffer, pDescr, len);                        //加载上传数据
                         SetupLen -= len;
                         pDescr += len;
                         break;

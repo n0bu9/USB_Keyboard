@@ -49,8 +49,8 @@ void uart_debug(void) {
         uart_count = timer_read();
         is_init = 0;
     }
-    if (timer_elapsed(uart_count) > 20) {
-        //printf("P36 Pin Level: %d\n", P3^6);
+    if (timer_elapsed(uart_count) > 500) {
+        printf("uart_debug\n");
         uart_count = timer_read();
     }
 }
@@ -81,20 +81,20 @@ void main( )
 {
     UINT16 j = 0;
     CfgFsys( );                                                                //CH554时钟选择配置
-    mDelaymS(20);                                                              //修改主频，建议稍加延时等主频稳定
-    usb_device_init();                                                         //USB设备初始化                  
+    mDelaymS(20);                                                              //修改主频，建议稍加延时等主频稳定                
     uart0_init();                                                              //串口0初始化
+    printf("start\n");
+    usb_device_init();                                                         //USB设备初始化  
     basic_init();                                                              //基本外设初始化
 	EA = 1;                                                                    //开启总中断
 
     mTimer0RunCTL(1);                                                          //启动定时器0
     usb_clear_flag();                                                          //清除USB设备状态
-    printf("Run\n");
     while(1){
       	// led_flash();
         // keyboard_test();
         // keyboard_scan();
-        // uart_debug();
+        uart_debug();
         hid_value_handle();
     }
 }

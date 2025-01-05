@@ -124,7 +124,7 @@ void uart0_init(void)
 * Description    : UART0中断服务程序
 *******************************************************************************/
 #if DEBUG
-void query_uart0_interrupt(void) interrupt INT_NO_UART0 using 1             //UART0中断服务程序,使用寄存器组1
+void query_uart0_interrupt(void) interrupt INT_NO_UART0 using 2             //UART0中断服务程序,使用寄存器组1
 {
     uint8_t rec;
     if(RI)
