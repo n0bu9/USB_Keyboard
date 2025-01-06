@@ -20,5 +20,8 @@ uint32_t timer_read32(void);
 uint16_t timer_elapsed(uint16_t last);
 uint32_t timer_elapsed32(uint32_t last);
 void uart0_init(void);
+void feed_wdt(void);
+void stop_wdt(void);
+void enable_wdt(void);
 
 #endif

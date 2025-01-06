@@ -77,6 +77,11 @@ void keyboard_test(void)
     }
 }
 
+void feed_wdt_proc(void) 
+{
+    feed_wdt();
+}
+
 void main( )
 {
     UINT16 j = 0;
@@ -86,15 +91,18 @@ void main( )
     printf("start\n");
     usb_device_init();                                                         //USB设备初始化  
     basic_init();                                                              //基本外设初始化
+    // CH554WDTFeed(0x00);                                                        //看门狗复位时间设置
+    // CH554WDTModeSelect(1);                                                     //看门狗作为复位
 	EA = 1;                                                                    //开启总中断
 
     mTimer0RunCTL(1);                                                          //启动定时器0
     usb_clear_flag();                                                          //清除USB设备状态
     while(1){
-      	// led_flash();
+        feed_wdt_proc();
+      	led_flash();
         // keyboard_test();
         // keyboard_scan();
-        uart_debug();
+        // uart_debug();
         hid_value_handle();
     }
 }

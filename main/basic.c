@@ -1,8 +1,8 @@
 #include "basic.h"
 #include "timer.h"
 #include "main.h"
-#if DEBUG
 #include "Debug.h"
+#if DEBUG
 #include "usb_hid.h"
 #endif
 
@@ -77,8 +77,7 @@ uint32_t timer_elapsed32(uint32_t last)
 // 定时器0中断服务程序
 void timer0_interrupt( void ) interrupt INT_NO_TMR0 using 3     //1MS         //timer0中断服务程序,使用寄存器组3
 {
-    timer_count++;
-    TF0 = 0;                                                                   //清除定时器0中断标志
+    timer_count++;                                                             //清除定时器0中断标志
     mTimer_x_SetData(0,1000);                                                  //设置定时器0初值 = 1ms
 }
 
@@ -93,8 +92,8 @@ void timer0_interrupt( void ) interrupt INT_NO_TMR0 using 3     //1MS         //
 *******************************************************************************/
 void uart0_init(void)
 {
-    UINT32 x;
-    UINT8 x2;
+    uint32_t x;
+    uint8_t x2;
 
     SM0 = 0;
     SM1 = 1;
@@ -112,10 +111,26 @@ void uart0_init(void)
     T2MOD = T2MOD | bTMR_CLK | bT1_CLK;                                        //Timer1时钟选择
     TH1 = 0-x;                                                                 //12MHz晶振,buad/12为实际需设置波特率
     TR1 = 1;                                                                   //启动定时器1
-    TI = 1;
+    TI = 1;                                                                    //串口0发送使能                           
+    PIN_FUNC |= bUART0_PIN_X;                                                  //串口0引脚映射 RXD0/TXD0 on P1.2/P1.3  
     #if DEBUG
     REN = 1;                                                                   //串口0接收使能
     #endif
+}
+
+void feed_wdt(void)
+{
+    WDOG_COUNT = 0;
+}
+
+void stop_wdt(void)
+{
+    GLOBAL_CFG &= ~bWDOG_EN;
+}
+
+void enable_wdt(void)
+{
+    GLOBAL_CFG |= bWDOG_EN;
 }
 
 /*******************************************************************************
@@ -123,14 +138,16 @@ void uart0_init(void)
 * Description    : UART0中断服务程序
 *******************************************************************************/
 #if DEBUG
-void query_uart0_interrupt(void) interrupt INT_NO_UART0 using 2             //UART0中断服务程序,使用寄存器组1
+void query_uart0_interrupt(void) interrupt INT_NO_UART0 using 2             //UART0中断服务程序,使用寄存器组2
 {
     uint8_t rec;
     if(RI)
     {
         rec = SBUF;
-        get_keyboard_data(rec);
         RI = 0;
+        CH554UART0SendByte(rec);
+        get_keyboard_data(rec);
     }
+    TI = 0;
 }
 #endif
