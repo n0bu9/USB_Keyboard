@@ -1,1 +1,1 @@
-"main\usb_hid.c" LARGE OPTIMIZE (8,SPEED) BROWSE NOAREGS INCDIR(.\main;.\Public) DEBUG OBJECTEXTEND PRINT(.\main\usb_hid.lst) OBJECT(usb_hid.obj)
+"main\usb_hid.c" LARGE OPTIMIZE (8,SPEED) BROWSE NOAREGS INCDIR(.\main;.\Public) DEBUG OBJECTEXTEND PRINT(.\main\usb_hid.lst) TABS (2) OBJECT(usb_hid.obj)

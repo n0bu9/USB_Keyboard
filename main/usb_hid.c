@@ -24,10 +24,10 @@ uint8_t hid_report_descriptor[62] = {
 };
 
 uint8_t device_descriptor[18] = {
-    0x02, // 设备描述符的字节数大小(bLength)
+    0x12, // 设备描述符的字节数大小(bLength)
     0x01, // 设备类型(bDescriptorType)
     0x00, 0x02, // USB版本(bcdUSB)
-    0x00, // 设备类代码(bDeviceClass)  
+    0x00, // 设备类代码(bDeviceClass)
     0x00, // 设备子类代码(bDeviceSubClass)
     0x00, // 设备协议代码(bDeviceProtocol)
     DEFAULT_ENDP0_SIZE, // 端点0的最大包大小(bMaxPacketSize0)
@@ -63,11 +63,11 @@ uint8_t config_descriptor[34] = {
     /* HID描述符 9B */
     0x09, // 设备描述符的字节数大小(bLength)
     0x21, // HID描述符的类型(bDescriptorType)
-    0x11,0x01, // HID规范版本号(bcdHID,为1.11) 
+    0x11,0x01, // HID规范版本号(bcdHID,为1.11)
     0x00, // 国家代码(bCountryCode)
     0x01, // 类别描述符数目(至少有一个报表描述符)(bNumDescriptors)
     0x22, // 该类别描述符的类型(bDescriptorType)
-    0x00,sizeof(hid_report_descriptor), // 该类别描述符的总长度 !!暂定(wDescriptorLength)
+    sizeof(hid_report_descriptor),0x00, // 该类别描述符的总长度 !!暂定(wDescriptorLength)
     /* 端点描述符 7B */
     0x07, // 端点描述符的字节数大小(bLength)
     0x05, // 端点描述符的类型(bDescriptorType)
@@ -97,16 +97,16 @@ static USB_SETUP_REQ   SetupReqBuf; // 暂存Setup包
 * Output         : None
 * Return         : None
 *******************************************************************************/
-void usb_device_init(void) 
+void usb_device_init(void)
 {
-    IE_USB = 0;                                                                // 关闭USB中断                                          
+    IE_USB = 0;                                                                // 关闭USB中断
 	USB_CTRL = 0x00;                                                           // 先设定USB设备模式
     UEP0_DMA = Ep0Buffer;                                                      //端点0数据传输地址
     UEP1_DMA = Ep1Buffer;                                                      //端点1数据传输地址
     UEP4_1_MOD = ~(bUEP4_RX_EN | bUEP4_TX_EN | bUEP1_RX_EN | bUEP1_BUF_MOD) | bUEP4_TX_EN;;   //端点1单64字节收发缓冲区,端点0收发
     UEP0_CTRL = UEP_R_RES_ACK | UEP_T_RES_NAK;                                 //OUT事务返回ACK，IN事务返回NAK
     UEP1_CTRL = bUEP_T_TOG | UEP_T_RES_NAK;                                 //IN事务返回NAK，OUT事务返回ACK
-		
+
     USB_DEV_AD = 0x00;
     UDEV_CTRL = bUD_PD_DIS;                                                    // 禁止DP/DM下拉电阻
     USB_CTRL = bUC_DEV_PU_EN | bUC_INT_BUSY | bUC_DMA_EN;                      // 启动USB设备及DMA，在中断期间中断标志未清除前自动返回NAK
@@ -114,6 +114,7 @@ void usb_device_init(void)
     USB_INT_FG = 0xFF;                                                         // 清中断标志
     USB_INT_EN = bUIE_SUSPEND | bUIE_TRANSFER | bUIE_BUS_RST;                  // 开启总线挂起、传输、总线复位中断、USB传输完成中断
     IE_USB = 1;                                                                 // 开启USB中断
+    printf("OK\r\n");
 }
 
 /*******************************************************************************
@@ -123,7 +124,7 @@ void usb_device_init(void)
 * Output         : None
 * Return         : None
 *******************************************************************************/
-void enp1_in_evt(void) 
+void enp1_in_evt(void)
 {
     memcpy( Ep1Buffer, HIDKey, sizeof(HIDKey));                              //加载上传数据
     UEP1_T_LEN = sizeof(HIDKey);                                             //上传数据长度
@@ -138,20 +139,18 @@ void device_interrupt(void) interrupt INT_NO_USB using 1                        
 {
     uint8_t len;
     #if DEBUG_USB_ISR
-        CH554UART0SendByte('1');
-        CH554UART0SendByte(USB_INT_ST);
+        printf("USB_INT_ST=%d\r\n", USB_INT_ST);
     #endif
     if(UIF_TRANSFER)                                                            //USB传输完成标志
     {
         #if DEBUG_USB_ISR
-            CH554UART0SendByte('2');
-            CH554UART0SendByte(UIF_TRANSFER);
+            printf("UIF_TRANSFER=%d\r\n", UIF_TRANSFER);
         #endif
         switch (USB_INT_ST & (MASK_UIS_TOKEN | MASK_UIS_ENDP))
         {
         case UIS_TOKEN_IN | 2:                                                  //endpoint 2# 中断端点上传
             #if DEBUG_USB_ISR
-                CH554UART0SendByte('3');
+                printf("3\r\n");
             #endif
             UEP2_T_LEN = 0;                                                     //预使用发送长度一定要清空
 //            UEP1_CTRL ^= bUEP_T_TOG;                                          //如果不设置自动翻转则需要手动翻转
@@ -159,7 +158,7 @@ void device_interrupt(void) interrupt INT_NO_USB using 1                        
             break;
         case UIS_TOKEN_IN | 1:                                                  //endpoint 1# 中断端点上传
             #if DEBUG_USB_ISR
-                CH554UART0SendByte('4');
+                printf("4\r\n");
             #endif
             UEP1_T_LEN = 0;                                                     //预使用发送长度一定要清空
 //            UEP2_CTRL ^= bUEP_T_TOG;                                          //如果不设置自动翻转则需要手动翻转
@@ -179,27 +178,27 @@ void device_interrupt(void) interrupt INT_NO_USB using 1                        
                     SetupLen = 0x7F;    // 限制总长度
                 }
                 len = 0;                                                        // 默认为成功并且上传0长度
-                SetupReq = UsbSetupBuf->bRequest;								
+                SetupReq = UsbSetupBuf->bRequest;
                 if ((UsbSetupBuf->bRequestType & USB_REQ_TYP_MASK) != USB_REQ_TYP_STANDARD) /* HID类命令 */
                 {
-									switch( SetupReq ) 
+									switch( SetupReq )
 									{
-										case 0x01://GetReport
-												 break;
-										case 0x02://GetIdle
-												 break;	
-										case 0x03://GetProtocol
-												 break;				
-										case 0x09://SetReport										
-												 break;
-										case 0x0A://SetIdle
-												 break;	
-										case 0x0B://SetProtocol
-												 break;
-										default:
-												 len = 0xFF;  								 					            /*命令不支持*/					
-												 break;
-								  }	
+                                    case 0x01://GetReport
+                                            break;
+                                    case 0x02://GetIdle
+                                            break;
+                                    case 0x03://GetProtocol
+                                            break;
+                                    case 0x09://SetReport
+                                            break;
+                                    case 0x0A://SetIdle
+                                            break;
+                                    case 0x0B://SetProtocol
+                                            break;
+                                    default:
+                                            len = 0xFF;  								 					            /*命令不支持*/
+                                            break;
+								    }
                 }
                 else
                 {//标准请求
@@ -222,8 +221,9 @@ void device_interrupt(void) interrupt INT_NO_USB using 1                        
                                 pDescr = hid_report_descriptor;                        //数据准备上传
                                 len = sizeof(hid_report_descriptor);
                                 Ready = 1;                                  //如果有更多接口，该标准位应该在最后一个接口配置完成后有效
-                                IE_UART1 = 1;//开启串口中断															
-															
+                                #if DEBUG
+                                ES = 1;                                     //开启串口中断
+                                #endif
                             }
                             else
                             {
@@ -394,10 +394,10 @@ void device_interrupt(void) interrupt INT_NO_USB using 1                        
             len = USB_RX_LEN;
             if((SetupReq == 0x09)&& (len == 1))
             {
-              LED_VALID = Ep0Buffer[0];							
+              LED_VALID = Ep0Buffer[0];
             }
-            else if((SetupReq == 0x09) && (len == 8)){//SetReport						 
-            }							
+            else if((SetupReq == 0x09) && (len == 8)){//SetReport
+            }
             UEP0_T_LEN = 0;  //虽然尚未到状态阶段，但是提前预置上传0长度数据包以防主机提前进入状态阶段
             UEP0_CTRL = UEP_R_RES_ACK | UEP_T_RES_ACK;//默认数据包是DATA0,返回应答ACK
             break;
@@ -428,164 +428,164 @@ void device_interrupt(void) interrupt INT_NO_USB using 1                        
 /*******************************************************************************
 * Function Name  : key_code_correspond()
 * Description    : 键码比对表，由数值对应键盘值。
-* Input          : UINT8 keyCode 
+* Input          : UINT8 keyCode
 * Output         : None
 * Return         : None
 *******************************************************************************/
 void key_code_correspond(UINT8 keyCode)
 {
-	HIDKey[0] = 0; 
+	HIDKey[0] = 0;
 	if((keyCode>='a')&&(keyCode<='z')){                                       //键值a-z
- 
+
 		if(LED_VALID&0x02)
 		{
 			FLAG = 0;
 			HIDKey[2] = 0x39;
 			enp1_in_evt();
 			while(FLAG == 0);
-			FLAG = 0;	
+			FLAG = 0;
 			memset(&HIDKey[0],0,8);
-			enp1_in_evt();		
-			while(FLAG == 0);				
+			enp1_in_evt();
+			while(FLAG == 0);
 		}
-		keyCode -= 0x5D; 
-		HIDKey[2] = keyCode; 		
-		
-	}else if((keyCode>='A')&&(keyCode<='Z')){			
+		keyCode -= 0x5D;
+		HIDKey[2] = keyCode;
+
+	}else if((keyCode>='A')&&(keyCode<='Z')){
 		if((LED_VALID&0x02) == 0){
 			FLAG = 0;
 			HIDKey[2] = 0x39;
 			enp1_in_evt();
 			while(FLAG == 0);
-			FLAG = 0;	
+			FLAG = 0;
 			memset(&HIDKey[0],0,8);
-			enp1_in_evt();		
-			while(FLAG == 0);				
-		}    
-	    keyCode -= 0x3D; 
-        HIDKey[2] = keyCode;  
-        // HIDKey[0]	= 0x02;	                                                  //shift+		
+			enp1_in_evt();
+			while(FLAG == 0);
+		}
+	    keyCode -= 0x3D;
+        HIDKey[2] = keyCode;
+        // HIDKey[0]	= 0x02;	                                                  //shift+
     }else if((keyCode>='1')&&(keyCode<='9')){
 		keyCode -= 0x13;                                                        //字母区数字键
-		HIDKey[2] = keyCode; 		
+		HIDKey[2] = keyCode;
 	}else if(keyCode=='0'){
-		HIDKey[2] = 0x27; 		
-	}else if(keyCode <= 0x2f){		
+		HIDKey[2] = 0x27;
+	}else if(keyCode <= 0x2f){
 		if(keyCode == 0x20){
-			HIDKey[2] = 0x2C;                                                     //空格        
+			HIDKey[2] = 0x2C;                                                     //空格
 		}else if(keyCode == 0x21){//'!'
-			HIDKey[2] = 0x1E; 
-			HIDKey[0]	= 0x02;	                                                  //shift+		
+			HIDKey[2] = 0x1E;
+			HIDKey[0]	= 0x02;	                                                  //shift+
 		}else if(keyCode == 0x22){//'"'
-			HIDKey[2] = 0x34; 
-			HIDKey[0]	= 0x02;	                                                  //shift+		
+			HIDKey[2] = 0x34;
+			HIDKey[0]	= 0x02;	                                                  //shift+
 		}else if(keyCode == 0x23){//'#'
-			HIDKey[2] = 0x20; 
-			HIDKey[0]	= 0x02;	                                                  //shift+		
+			HIDKey[2] = 0x20;
+			HIDKey[0]	= 0x02;	                                                  //shift+
 		}else if(keyCode == 0x24){//'$'
-			HIDKey[2] = 0x21; 
-			HIDKey[0]	= 0x02;	                                                  //shift+		
+			HIDKey[2] = 0x21;
+			HIDKey[0]	= 0x02;	                                                  //shift+
 		}else if(keyCode == 0x25){//'%'
-			HIDKey[2] = 0x22; 
-			HIDKey[0]	= 0x02;	                                                  //shift+		
+			HIDKey[2] = 0x22;
+			HIDKey[0]	= 0x02;	                                                  //shift+
 		}else if(keyCode == 0x26){//'&'
-			HIDKey[2] = 0x24; 
-			HIDKey[0]	= 0x02;	                                                  //shift+		
+			HIDKey[2] = 0x24;
+			HIDKey[0]	= 0x02;	                                                  //shift+
 		}else if(keyCode == 0x27){//'%'
-			HIDKey[2] = 0x34; 	
+			HIDKey[2] = 0x34;
 		}else if(keyCode == 0x28){/*(*/
-			HIDKey[2] = 0x26; 
-			HIDKey[0]	= 0x02;	                                                  //shift+		
+			HIDKey[2] = 0x26;
+			HIDKey[0]	= 0x02;	                                                  //shift+
 		}else if(keyCode == 0x29){/*)*/
-			HIDKey[2] = 0x27; 
-			HIDKey[0]	= 0x02;	                                                  //shift+		
+			HIDKey[2] = 0x27;
+			HIDKey[0]	= 0x02;	                                                  //shift+
 		}else if(keyCode == 0x2a){/***/
-			HIDKey[2] = 0x25; 
-			HIDKey[0]	= 0x02;	                                                  //shift+		
+			HIDKey[2] = 0x25;
+			HIDKey[0]	= 0x02;	                                                  //shift+
 		}else if(keyCode == 0x2b){/*+*/
-			HIDKey[2] = 0x2e; 
-			HIDKey[0]	= 0x02;	                                                  //shift+		
+			HIDKey[2] = 0x2e;
+			HIDKey[0]	= 0x02;	                                                  //shift+
 		}else if(keyCode == 0x2c){/*,*/
-			HIDKey[2] = 0x36; 	
+			HIDKey[2] = 0x36;
 		}else if(keyCode == 0x2d){/*-*/
-			HIDKey[2] = 0x2d; 	
+			HIDKey[2] = 0x2d;
 		}else if(keyCode == 0x2e){/*,*/
-			HIDKey[2] = 0x37; 	
+			HIDKey[2] = 0x37;
 		}else if(keyCode == 0x2f){/*/*/
-			HIDKey[2] = 0x38; 		
-		}		
-    }else if(keyCode <= 0x3f){	
+			HIDKey[2] = 0x38;
+		}
+    }else if(keyCode <= 0x3f){
 		if(keyCode == 0x3a){/*:*/
-			HIDKey[2] = 0x33; 	
-			HIDKey[0]	|= 0x02;	                                                  //shift+			
+			HIDKey[2] = 0x33;
+			HIDKey[0]	|= 0x02;	                                                  //shift+
 		}else if(keyCode == 0x3b){/*;*/
-			HIDKey[2] = 0x33; 			
+			HIDKey[2] = 0x33;
 		}else if(keyCode == 0x3c){/*<*/
-			HIDKey[2] = 0x36; 	
-			HIDKey[0]	|= 0x02;	                                                  //shift+			
+			HIDKey[2] = 0x36;
+			HIDKey[0]	|= 0x02;	                                                  //shift+
 		}else if(keyCode == 0x3d){/*=*/
-			HIDKey[2] = 0x2e; 				
+			HIDKey[2] = 0x2e;
 		}else if(keyCode == 0x3e){/*>*/
-			HIDKey[2] = 0x37; 	
-			HIDKey[0]	|= 0x02;	                                                  //shift+			
+			HIDKey[2] = 0x37;
+			HIDKey[0]	|= 0x02;	                                                  //shift+
 		}else if(keyCode == 0x3f){/*?*/
-			HIDKey[2] = 0x38; 	
-			HIDKey[0]	|= 0x02;	                                                  //shift+			
+			HIDKey[2] = 0x38;
+			HIDKey[0]	|= 0x02;	                                                  //shift+
 		}
     }else if(keyCode == 0x40){/*@*/
-        HIDKey[2] = 0x1f; 	
-        HIDKey[0]	= 0x02;	                                                  //shift+			  
-    }else if((keyCode >= 0x5b)&&(keyCode <= 0x60)){	
+        HIDKey[2] = 0x1f;
+        HIDKey[0]	= 0x02;	                                                  //shift+
+    }else if((keyCode >= 0x5b)&&(keyCode <= 0x60)){
 		if(keyCode == 0x5b){/*[*/
-			HIDKey[2] = 0x2f; 			
+			HIDKey[2] = 0x2f;
 		}else if(keyCode == 0x5c){/*\*/
-			HIDKey[2] = 0x31; 			
+			HIDKey[2] = 0x31;
 		}else if(keyCode == 0x5d){/*:*/
-			HIDKey[2] = 0x30; 		
+			HIDKey[2] = 0x30;
 		}else if(keyCode == 0x5e){/*:*/
-			HIDKey[2] = 0x23; 	
-			HIDKey[0]	= 0x02;	                                                  //shift+			
+			HIDKey[2] = 0x23;
+			HIDKey[0]	= 0x02;	                                                  //shift+
 		}else if(keyCode == 0x5f){/*:*/
-			HIDKey[2] = 0x2d; 	
-			HIDKey[0]	= 0x02;	                                                  //shift+			
+			HIDKey[2] = 0x2d;
+			HIDKey[0]	= 0x02;	                                                  //shift+
 		}else if(keyCode == 0x60){/*`*/
-			HIDKey[2] = 0x35; 			
-		}	
+			HIDKey[2] = 0x35;
+		}
 	}else if((keyCode >= 0x7b)&&(keyCode <= 0x7f)){
 		if(keyCode == 0x7b){/*{*/
-			HIDKey[2] = 0x2f; 	
-			HIDKey[0]	= 0x02;	                                                  //shift+			
+			HIDKey[2] = 0x2f;
+			HIDKey[0]	= 0x02;	                                                  //shift+
 		}
 		else if(keyCode == 0x7c){/*|*/
-			HIDKey[2] = 0x31; 	
-			HIDKey[0]	= 0x02;	                                                  //shift+			
+			HIDKey[2] = 0x31;
+			HIDKey[0]	= 0x02;	                                                  //shift+
 		}
 		else if(keyCode == 0x7d){/*}*/
-			HIDKey[2] = 0x30; 	
-			HIDKey[0]	= 0x02;	                                                  //shift+			
+			HIDKey[2] = 0x30;
+			HIDKey[0]	= 0x02;	                                                  //shift+
 		}
 		else if(keyCode == 0x7e){/*~*/
-			HIDKey[2] = 0x35; 	
-			HIDKey[0]	= 0x02;	                                                  //shift+			
+			HIDKey[2] = 0x35;
+			HIDKey[0]	= 0x02;	                                                  //shift+
 		}
 		else if(keyCode == 0x7f){/*{*/
-			HIDKey[2] = 0x4c; 			
+			HIDKey[2] = 0x4c;
 		}
-	}else if((keyCode >= 0x80)&&(keyCode <= 0x87)){/*left ctl*/	
-        keyCode &= 0x0f; 
-        HIDKey[0]	= (1<<keyCode);	                                          //			
+	}else if((keyCode >= 0x80)&&(keyCode <= 0x87)){/*left ctl*/
+        keyCode &= 0x0f;
+        HIDKey[0]	= (1<<keyCode);	                                          //
     }else if((keyCode >= 0xd7)&&(keyCode <= 0xda)){/**/
-        keyCode -= 0x88; 		
-        HIDKey[2]	= keyCode;	                                         	
+        keyCode -= 0x88;
+        HIDKey[2]	= keyCode;
     }else if((keyCode >= 0xb0)&&(keyCode <= 0xb3)){/**/
-        keyCode -= 0x88; 		
-        HIDKey[2]	= keyCode;	
+        keyCode -= 0x88;
+        HIDKey[2]	= keyCode;
     }else if((keyCode >= 0xd1)&&(keyCode <= 0xd5)){/**/
-        keyCode -= 0x88; 		
-        HIDKey[2]	= keyCode;	                                         	
+        keyCode -= 0x88;
+        HIDKey[2]	= keyCode;
     }else if((keyCode >= 0xC1)&&(keyCode <= 0xCD)){/**/
-        keyCode -= 0x88; 		
-        HIDKey[2]	= keyCode;	                                         	
+        keyCode -= 0x88;
+        HIDKey[2]	= keyCode;
     }
 }
 
@@ -614,17 +614,17 @@ void usb_clear_flag(void)
 static void __hid_value_handle(void)
 {
 	key_code_correspond(data_buf[send_point]);
-	
+
 	send_point++;
 	if(send_point>=BUFMAX) send_point=0;
 
 	FLAG = 0;
 	enp1_in_evt();
 	while(FLAG == 0);
-	FLAG = 0;	
+	FLAG = 0;
 	memset(&HIDKey[0],0,8);
-	enp1_in_evt();		
-	while(FLAG == 0);		
+	enp1_in_evt();
+	while(FLAG == 0);
 }
 
 /*******************************************************************************

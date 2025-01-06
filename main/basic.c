@@ -9,10 +9,10 @@
 
 UINT32 data timer_count = 0;
 
-void basic_init(void) 
+void basic_init(void)
 {
     // 初始化定时器0
-    mTimer0Clk12DivFsys();                                                      //Timer0时钟选择
+    mTimer0Clk12DivFsys();                                                     //Timer0时钟选择
     mTimer_x_ModInit(0,1);                                                     //Timer0设置为16位定时器
     mTimer_x_SetData(0,1000);                                                  //设置定时器0初值 = 1ms
     ET0 = 1;                                                                   //开启定时器0中断
@@ -28,7 +28,7 @@ void timer_clear(void)
 }
 
 // 以16位读取定时器0计数
-uint16_t timer_read(void) 
+uint16_t timer_read(void)
 {
     uint32_t t;
 
@@ -51,7 +51,7 @@ uint32_t timer_read32(void) {
 }
 
 // 以16位读取定时器0计数
-uint16_t timer_elapsed(uint16_t last) 
+uint16_t timer_elapsed(uint16_t last)
 {
     uint32_t t;
 
@@ -63,7 +63,7 @@ uint16_t timer_elapsed(uint16_t last)
 }
 
 // 以32位读取定时器0计数
-uint32_t timer_elapsed32(uint32_t last) 
+uint32_t timer_elapsed32(uint32_t last)
 {
     uint32_t t;
 
@@ -79,7 +79,7 @@ void timer0_interrupt( void ) interrupt INT_NO_TMR0 using 3     //1MS         //
 {
     timer_count++;
     TF0 = 0;                                                                   //清除定时器0中断标志
-    mTimer_x_SetData(0,1000);                                                  //设置定时器0初值 = 1ms 
+    mTimer_x_SetData(0,1000);                                                  //设置定时器0初值 = 1ms
 }
 
 
@@ -94,7 +94,7 @@ void timer0_interrupt( void ) interrupt INT_NO_TMR0 using 3     //1MS         //
 void uart0_init(void)
 {
     UINT32 x;
-    UINT8 x2; 
+    UINT8 x2;
 
     SM0 = 0;
     SM1 = 1;
@@ -103,7 +103,7 @@ void uart0_init(void)
     RCLK = 0;                                                                  //UART0接收时钟
     TCLK = 0;                                                                  //UART0发送时钟
     PCON |= SMOD;
-    x = 10 * FREQ_SYS / UART0_BUAD / 16;                                       //如果更改主频，注意x的值不要溢出                            
+    x = 10 * FREQ_SYS / UART0_BUAD / 16;                                       //如果更改主频，注意x的值不要溢出
     x2 = x % 10;
     x /= 10;
     if ( x2 >= 5 ) x ++;                                                       //四舍五入
@@ -115,7 +115,6 @@ void uart0_init(void)
     TI = 1;
     #if DEBUG
     REN = 1;                                                                   //串口0接收使能
-    ES = 1;                                                                    //串口0中断使能                               
     #endif
 }
 
