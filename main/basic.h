@@ -3,10 +3,6 @@
 
 #include "main.h"
 
-#ifdef __C51__
-#define inline
-#endif
-
 #define ATOMIC_RESTORESTATE     E_DIS
 #define ATOMIC_BLOCK(type)      //for (UINT8 __ToDo = 1; __ToDo; __ToDo = 0)  // 原子操作
 
