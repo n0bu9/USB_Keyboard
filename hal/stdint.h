@@ -1,16 +1,16 @@
 #ifndef __STDINT_H__
 #define __STDINT_H__
 
-#ifdef __C51__
+#if defined(__C51__)
 
 #define inline
-typedef bit BOOL;
-typedef unsigned char uint8_t;
-typedef unsigned short uint16_t;
-typedef unsigned long uint32_t;
-typedef unsigned char uint8_t;
-typedef unsigned short uint16_t;
-typedef unsigned long uint32_t;
+#define bit bool;
+#define uint8_t unsigned char;
+#define uint16_t unsigned short;
+#define uint32_t unsigned long;
+#define int8_t signed char;
+#define int16_t signed short;
+#define int32_t signed long;
 #else
 
 #define xdata

@@ -22,6 +22,8 @@ void basic_init(void)
 // 清除定时器0计数
 void timer_clear(void)
 {
+    uint8_t __ToDo;
+
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
         timer_count = 0;
     }
@@ -31,6 +33,7 @@ void timer_clear(void)
 uint16_t timer_read(void)
 {
     uint32_t t;
+    uint8_t __ToDo;
 
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
         t = timer_count;
@@ -42,6 +45,7 @@ uint16_t timer_read(void)
 // 以32位读取定时器0计数
 uint32_t timer_read32(void) {
     uint32_t t;
+    uint8_t __ToDo;
 
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
         t = timer_count;
@@ -54,6 +58,7 @@ uint32_t timer_read32(void) {
 uint16_t timer_elapsed(uint16_t last)
 {
     uint32_t t;
+    uint8_t __ToDo;
 
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
         t = timer_count;
@@ -66,6 +71,7 @@ uint16_t timer_elapsed(uint16_t last)
 uint32_t timer_elapsed32(uint32_t last)
 {
     uint32_t t;
+    uint8_t __ToDo;
 
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
         t = timer_count;
@@ -111,8 +117,8 @@ void uart0_init(void)
     T2MOD = T2MOD | bTMR_CLK | bT1_CLK;                                        //Timer1时钟选择
     TH1 = 0-x;                                                                 //12MHz晶振,buad/12为实际需设置波特率
     TR1 = 1;                                                                   //启动定时器1
-    TI = 1;                                                                    //串口0发送使能                           
-    PIN_FUNC |= bUART0_PIN_X;                                                  //串口0引脚映射 RXD0/TXD0 on P1.2/P1.3  
+    TI = 1;                                                                    //串口0发送使能
+    PIN_FUNC |= bUART0_PIN_X;                                                  //串口0引脚映射 RXD0/TXD0 on P1.2/P1.3
     #if DEBUG
     REN = 1;                                                                   //串口0接收使能
     #endif

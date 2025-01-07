@@ -1,40 +1,78 @@
 #include "ch55x_conf.h"
 
-void io_mode(io_type _io,GPIOModeTypeDef mode) //其初始化
+void gpio_init(gpio_type _io, gpio_mode_enum mode) //其初始化
 {
-    if (_io.port==PORT_A) {
-        GPIOA_ModeCfg( _io.pin, mode);
-    }else{
-        GPIOB_ModeCfg( _io.pin, mode);
+    if (_io.port_pin < PORT_DIVIDER){
+        switch(mode){
+        case GPIO_INPUT_NO_PULL:
+            P1_MOD_OC = P1_MOD_OC & ~(1<<_io.port_pin);
+            P1_DIR_PU = P1_DIR_PU &	~(1<<_io.port_pin);
+            break;
+        case GPIO_OUT_INPUT_PP:
+            P1_MOD_OC = P1_MOD_OC & ~(1<<_io.port_pin);
+            P1_DIR_PU = P1_DIR_PU |	(1<<_io.port_pin);
+        break;
+        case GPIO_OUT_INPUT_OD_NO_PULL:
+            P1_MOD_OC = P1_MOD_OC | (1<<_io.port_pin);
+            P1_DIR_PU = P1_DIR_PU &	~(1<<_io.port_pin);
+            break;
+        case GPIO_OUT_INPUT_OD:
+            P1_MOD_OC = P1_MOD_OC | (1<<_io.port_pin);
+            P1_DIR_PU = P1_DIR_PU |	(1<<_io.port_pin);
+            break;
+        default:
+            break;
+        }
+    }else if (_io.port_pin > PORT_DIVIDER){
+        switch(Mode){
+        case GPIO_INPUT_NO_PULL:
+            P3_MOD_OC = P3_MOD_OC & ~(1<<(_io.port_pin-PORT_DIVIDER-1));
+            P3_DIR_PU = P3_DIR_PU &	~(1<<(_io.port_pin-PORT_DIVIDER-1));
+            break;
+        case GPIO_OUT_INPUT_PP:
+            P3_MOD_OC = P3_MOD_OC & ~(1<<(_io.port_pin-PORT_DIVIDER-1));
+            P3_DIR_PU = P3_DIR_PU |	(1<<(_io.port_pin-PORT_DIVIDER-1));
+            break;
+        case GPIO_OUT_INPUT_OD_NO_PULL:
+            P3_MOD_OC = P3_MOD_OC | (1<<(_io.port_pin-PORT_DIVIDER-1));
+            P3_DIR_PU = P3_DIR_PU &	~(1<<(_io.port_pin-PORT_DIVIDER-1));
+            break;
+        case GPIO_OUT_INPUT_OD:
+            P3_MOD_OC = P3_MOD_OC | (1<<(_io.port_pin-PORT_DIVIDER-1));
+            P3_DIR_PU = P3_DIR_PU |	(1<<(_io.port_pin-PORT_DIVIDER-1));
+            break;
+        default:
+            break;
+    }
     }
 }
 
-void io_digital_write(io_type _io,uint8_t value) //写函数
+void gpio_digital_write(gpio_type _io,uint8_t value) //写函数
 {
-    if (_io.port==PORT_A) {
+    if (_io.port_pin < PORT_DIVIDER) {
         if(value){
-            GPIOA_SetBits(_io.pin);
+            P1^_io.port_pin = 1;
             _io.status=1;
         }else{
-            GPIOA_ResetBits(_io.pin);
+            P1^_io.port_pin = 0;
             _io.status=0;
         }
-    }else{
+    }else if (_io.port_pin > PORT_DIVIDER){
         if(value){
-            GPIOB_SetBits(_io.pin);
+            P3^(_io.port_pin-PORT_DIVIDER-1) = 1;
             _io.status=1;
         }else{
-            GPIOB_ResetBits(_io.pin);
+            P3^(_io.port_pin-PORT_DIVIDER-1) = 0;
             _io.status=0;
         }
     }
 }
-uint8_t io_digital_read(io_type _io) //读函数
+uint8_t gpio_digital_read(io_type _io) //读函数
 {
-    if (_io.port==PORT_A) {
-        _io.status=GPIOA_ReadPortPin(_io.pin)?1:0;
-    }else{
-        _io.status=GPIOB_ReadPortPin(_io.pin)?1:0;
+    if (_io.port_pin < PORT_DIVIDER) {
+        _io.status=P1^_io.port_pin?1:0;
+    }else if (_io.port_pin > PORT_DIVIDER){
+        _io.status=P3^(_io.port_pin-PORT_DIVIDER-1)?1:0;
     }
     return _io.status;
 }

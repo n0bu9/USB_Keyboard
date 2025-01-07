@@ -1,5 +1,5 @@
-#ifndef __CH55X_HAL_CONF_H__
-#define __CH55X_HAL_CONF_H__
+#ifndef __CH55X_CONF_H__
+#define __CH55X_CONF_H__
 
 #define GPIO_MODULE_ENABLED
 #define UART_MODULE_ENABLED
