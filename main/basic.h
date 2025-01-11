@@ -4,7 +4,8 @@
 #include "stdint.h"
 
 #define ATOMIC_RESTORESTATE     E_DIS
-#define ATOMIC_BLOCK(type)      for (__ToDo = 1, type = 0; __ToDo; __ToDo = 0, type = 1)  // 原子操作
+//#define ATOMIC_BLOCK(type)      for (__ToDo = 1, type = 1; __ToDo; __ToDo = 0, type = 0)  // 原子操作
+#define ATOMIC_BLOCK(type)      for (__ToDo=1;__ToDo==1;__ToDo=0)
 
 #define TIMER_DIFF_16(a, b)    ((uint16_t)(a - b))
 #define TIMER_DIFF_32(a, b)    ((uint32_t)(a - b))

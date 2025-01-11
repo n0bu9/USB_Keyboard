@@ -50,12 +50,12 @@
           <CreateExecutable>1</CreateExecutable>
           <CreateLib>0</CreateLib>
           <CreateHexFile>1</CreateHexFile>
-          <DebugInformation>1</DebugInformation>
-          <BrowseInformation>1</BrowseInformation>
+          <DebugInformation>0</DebugInformation>
+          <BrowseInformation>0</BrowseInformation>
           <ListingPath>.\main\</ListingPath>
           <HexFormatSelection>0</HexFormatSelection>
           <Merge32K>0</Merge32K>
-          <CreateBatchFile>1</CreateBatchFile>
+          <CreateBatchFile>0</CreateBatchFile>
           <BeforeCompile>
             <RunUserProg1>0</RunUserProg1>
             <RunUserProg2>0</RunUserProg2>
@@ -324,7 +324,7 @@
               <MiscControls></MiscControls>
               <Define></Define>
               <Undefine></Undefine>
-              <IncludePath>.\main;.\Public;.\hal</IncludePath>
+              <IncludePath>.\main;.\Public;.\driver</IncludePath>
             </VariousControls>
           </C51>
           <Ax51>
@@ -477,27 +477,27 @@
           </Files>
         </Group>
         <Group>
-          <GroupName>Core</GroupName>
+          <GroupName>Driver</GroupName>
           <Files>
             <File>
               <FileName>ch55x_gpio.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\hal\ch55x_gpio.c</FilePath>
+              <FilePath>.\driver\ch55x_gpio.c</FilePath>
             </File>
             <File>
               <FileName>ch55x_timer.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\hal\ch55x_timer.c</FilePath>
+              <FilePath>.\driver\ch55x_timer.c</FilePath>
             </File>
             <File>
               <FileName>ch55x_uart.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\hal\ch55x_uart.c</FilePath>
+              <FilePath>.\driver\ch55x_uart.c</FilePath>
             </File>
             <File>
               <FileName>system_ch55x.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\hal\system_ch55x.c</FilePath>
+              <FilePath>.\driver\system_ch55x.c</FilePath>
             </File>
           </Files>
         </Group>
