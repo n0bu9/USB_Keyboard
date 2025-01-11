@@ -46,7 +46,7 @@ void gpio_init(gpio_type _io, gpio_mode_enum mode) //其初始化
             break;
         }
     }
-    #else   
+    #else
     #endif
 }
 
@@ -74,9 +74,9 @@ void gpio_digital_write(gpio_type _io,bool value) //写函数
 bool gpio_digital_read(gpio_type _io) //读函数
 {
     if (_io < PORT_DIVIDER) {
-        return (bool)(P1^_io);
+        return (bool)(P1 & (1<<_io));
     }else if (_io > PORT_DIVIDER){
-        return (bool)(P3^(_io-PORT_DIVIDER-1));
+        return (bool)(P3 & (1<<(_io-PORT_DIVIDER-1)));
     }
     return (bool)0;
 }
