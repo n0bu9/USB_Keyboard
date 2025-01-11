@@ -206,7 +206,7 @@
             <Mode2>0</Mode2>
             <useCB>0</useCB>
             <useXB>0</useXB>
-            <useL251>0</useL251>
+            <useL251>1</useL251>
             <useA251>0</useA251>
             <Mx51>0</Mx51>
             <ModC812>0</ModC812>
@@ -324,7 +324,7 @@
               <MiscControls></MiscControls>
               <Define></Define>
               <Undefine></Undefine>
-              <IncludePath>.\main;.\Public</IncludePath>
+              <IncludePath>.\main;.\Public;.\hal</IncludePath>
             </VariousControls>
           </C51>
           <Ax51>
@@ -347,7 +347,7 @@
             <WarningLevel>2</WarningLevel>
             <DataOverlaying>1</DataOverlaying>
             <OverlayString></OverlayString>
-            <MiscControls></MiscControls>
+            <MiscControls>REMOVEUNUSED</MiscControls>
             <DisableWarningNumbers>16</DisableWarningNumbers>
             <LinkerCmdFile></LinkerCmdFile>
             <Assign></Assign>
@@ -357,7 +357,7 @@
             <CSection></CSection>
             <UserSection></UserSection>
             <CodeBaseAddress></CodeBaseAddress>
-            <XDataBaseAddress></XDataBaseAddress>
+            <XDataBaseAddress>0X0000-0X03FF</XDataBaseAddress>
             <PDataBaseAddress></PDataBaseAddress>
             <BitBaseAddress></BitBaseAddress>
             <DataBaseAddress></DataBaseAddress>
@@ -445,11 +445,6 @@
               <FilePath>.\main\main.c</FilePath>
             </File>
             <File>
-              <FileName>timer.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\main\timer.c</FilePath>
-            </File>
-            <File>
               <FileName>basic.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\main\basic.c</FilePath>
@@ -478,6 +473,31 @@
               <FileName>CH554.H</FileName>
               <FileType>5</FileType>
               <FilePath>.\Public\CH554.H</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>Core</GroupName>
+          <Files>
+            <File>
+              <FileName>ch55x_gpio.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\hal\ch55x_gpio.c</FilePath>
+            </File>
+            <File>
+              <FileName>ch55x_timer.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\hal\ch55x_timer.c</FilePath>
+            </File>
+            <File>
+              <FileName>ch55x_uart.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\hal\ch55x_uart.c</FilePath>
+            </File>
+            <File>
+              <FileName>system_ch55x.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\hal\system_ch55x.c</FilePath>
             </File>
           </Files>
         </Group>

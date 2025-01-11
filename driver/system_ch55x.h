@@ -6,7 +6,7 @@
 #define	 FREQ_SYS	   12000000	         //系统主频12MHz
 #define  OSC_EN_XT     0                 //外部晶振使能，默认开启内部晶振
 
-void SystemInit(void);
+void system_init(void);
 void delay_us(uint16_t n);
 void delay_ms(uint16_t n);
 

@@ -3,8 +3,8 @@
 
 #include "stdint.h"
 
-#define USE_UART0_ENABLE 1  // 1: 使能UART0，0: 不使能UART0
-#define USE_UART1_ENABLE 1  // 1: 使能UART1，0: 不使能UART1
+#define USE_UART0_ENABLE 1  // 1: 使用UART0，0: 不使用UART0
+#define USE_UART1_ENABLE 0  // 1: 使用UART1，0: 不使用UART1
 
 
 #if USE_UART0_ENABLE

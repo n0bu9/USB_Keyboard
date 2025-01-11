@@ -1,20 +1,8 @@
-/********************************** (C) COPYRIGHT *******************************
-* File Name          : Timer.H
-* Author             : WCH
-* Version            : V1.0
-* Date               : 2017/01/20
-* Description        : CH554 Time 初始化、定时器、计数器赋值、T2捕捉功能开启函数等
-                       定时器中断函数         		 		   
-*********************************************************************************
-* Copyright (c) 2021 Nanjing Qinheng Microelectronics Co., Ltd.
-* Attention: This software (modified or not) and binary are used for 
-* microcontroller manufactured by Nanjing Qinheng Microelectronics.
-********************************************************************************/
+#ifndef __CH55X_TIMER_H__
+#define __CH55X_TIMER_H__
 
-// #define  T0_INT   1                                                        //T中断开启
-//#define  T1_INT   0
-// #define  T2_INT   1
-// #define  T2_CAP   1
+#include "stdint.h"
+#include "ch554.h"
 
 extern UINT8 FLAG; 
 extern UINT16 Cap[8];
@@ -51,35 +39,35 @@ extern UINT16 Cap[8];
 #define CAP2Alter( )           (PIN_FUNC |= bT2EX_PIN_X;)                    //CAP2由P11 映射RST
 
 /*******************************************************************************
-* Function Name  : mTimer_x_ModInit(UINT8 x ,UINT8 mode)
+* Function Name  : mTimer_x_ModInit(uint8_t x ,uint8_t mode)
 * Description    : CH554定时计数器x模式设置
-* Input          : UINT8 mode,Timer模式选择
+* Input          : uint8_t mode,Timer模式选择
                    0：模式0，13位定时器，TLn的高3位无效
                    1：模式1，16位定时器
                    2：模式2，8位自动重装定时器
                    3：模式3，两个8位定时器  Timer0
                    3：模式3，Timer1停止		
-                   UINT8 x 定时器  0 1 2
+                   uint8_t x 定时器  0 1 2
 * Output         : None
 * Return         : 成功  SUCCESS
                    失败  FAIL
 *******************************************************************************/
-UINT8 mTimer_x_ModInit(UINT8 x ,UINT8 mode);
+uint8_t mTimer_x_ModInit(uint8_t x, uint8_t mode);
 
 /*******************************************************************************
 * Function Name  : mTimer_x_SetData
 * Description    : CH554Timer 
-* Input          : UINT8 x,定时器 0 1 2
-                   UINT16 dat,定时器赋值
+* Input          : uint8_t x,定时器 0 1 2
+                   uint16_t dat,定时器赋值
 * Output         : None
 * Return         : None
 *******************************************************************************/
-void mTimer_x_SetData(UINT8 x,UINT16 dat);
+void mTimer_x_SetData(uint8_t x,uint16_t dat);
 
 /*******************************************************************************
-* Function Name  : CAP2Init(UINT8 mode)
+* Function Name  : CAP2Init(uint8_t mode)
 * Description    : CH554定时计数器2 T2EX引脚捕捉功能初始化
-                   UINT8 mode,边沿捕捉模式选择
+                   uint8_t mode,边沿捕捉模式选择
                    0:T2ex从下降沿到下一个下降沿
                    1:T2ex任意边沿之间
                    3:T2ex从上升沿到下一个上升沿
@@ -87,12 +75,12 @@ void mTimer_x_SetData(UINT8 x,UINT16 dat);
 * Output         : None
 * Return         : None
 *******************************************************************************/
-void CAP2Init(UINT8 mode);
+void CAP2Init(uint8_t mode);
 
 /*******************************************************************************
-* Function Name  : CAP1Init(UINT8 mode)
+* Function Name  : CAP1Init(uint8_t mode)
 * Description    : CH554定时计数器2 T2引脚捕捉功能初始化T2
-                   UINT8 mode,边沿捕捉模式选择
+                   uint8_t mode,边沿捕捉模式选择
                    0:T2ex从下降沿到下一个下降沿
                    1:T2ex任意边沿之间
                    3:T2ex从上升沿到下一个上升沿
@@ -100,4 +88,6 @@ void CAP2Init(UINT8 mode);
 * Output         : None
 * Return         : None
 *******************************************************************************/
-void CAP1Init(UINT8 mode);
+void CAP1Init(uint8_t mode);
+
+#endif

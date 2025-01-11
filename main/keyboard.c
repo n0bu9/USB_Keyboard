@@ -1,3 +1,4 @@
+#include "stdint.h"
 #include "keyboard.h"
 #include "gpio.h"                                               
 #include "Debug.H"
@@ -139,9 +140,10 @@ void keyboard_scan(void) {
     }   
 }
 
-void keyboard_get_state(uint8_t *state) {
-    memcpy(state, key_state, KEY_NUM);
-}
+// void keyboard_get_state(uint8_t *state) 
+// {
+//     memcpy(state, key_state, KEY_NUM);
+// }
 
 void keyboard_test_init(void) 
 {

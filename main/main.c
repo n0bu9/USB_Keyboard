@@ -13,14 +13,14 @@
 #include "ch55x_conf.h"
 
 // application layer
-#include "timer.h"
-#include "keyboard.h"
+// #include "timer.h"
+// #include "keyboard.h"
 #include "basic.h"
-#include "iap.h"
-#include "main.h"
-#include "usb_hid.h"
+// #include "iap.h"
+// #include "main.h"
+// #include "usb_hid.h"
 #include "stdio.h"
-#include <string.h>
+// #include <string.h>
 
 #pragma  NOAREGS
 
@@ -33,8 +33,8 @@ void led_flash(void)
     if(is_init) {                 // 首次运行时初始化
         led_count = timer_read();
         is_init = 0;
-        led0.port_pin = PORT_3_PIN_0;
-        gpio_init(led0, GPIO_MODE_OUTPUT);
+        led0 = PORT_3_PIN_0;
+        gpio_init(led0, GPIO_OUT_INPUT_PP);
     }
 
     if(timer_elapsed(led_count) > 1000) {
@@ -43,56 +43,56 @@ void led_flash(void)
     }
 }
 
-void uart_debug(void) {
-    static uint16_t uart_count = 0;
-    static uint8_t is_init = 1;   // 添加初始化标志
+// void uart_debug(void) {
+//     static uint16_t uart_count = 0;
+//     static uint8_t is_init = 1;   // 添加初始化标志
 
-    if (is_init) {
-        uart_count = timer_read();
-        is_init = 0;
-    }
-    if (timer_elapsed(uart_count) > 500) {
-        printf("uart_debug\n");
-        uart_count = timer_read();
-    }
-}
+//     if (is_init) {
+//         uart_count = timer_read();
+//         is_init = 0;
+//     }
+//     if (timer_elapsed(uart_count) > 500) {
+//         printf("uart_debug\n");
+//         uart_count = timer_read();
+//     }
+// }
 
-void keyboard_test(void)
-{
-    static uint16_t keyboard_count = 0;
-    static uint8_t is_init = 1;   // 添加初始化标志
-    uint8_t key_state[KEY_NUM];
-    uint8_t i;
+// void keyboard_test(void)
+// {
+//     static uint16_t keyboard_count = 0;
+//     static uint8_t is_init = 1;   // 添加初始化标志
+//     uint8_t key_state[KEY_NUM];
+//     uint8_t i;
 
-    if (is_init) {
-        keyboard_count = timer_read();
-        is_init = 0;
-    }
-    if (timer_elapsed(keyboard_count) > 50) {
-        keyboard_get_state(key_state);
-        for (i = 0; i < KEY_NUM; i++) {
-            if (key_state[i] == 1) {
-                printf("Key %d is pressed\n", i);
-            }
-        }
-        keyboard_count = timer_read();
-    }
-}
+//     if (is_init) {
+//         keyboard_count = timer_read();
+//         is_init = 0;
+//     }
+//     if (timer_elapsed(keyboard_count) > 50) {
+//         keyboard_get_state(key_state);
+//         for (i = 0; i < KEY_NUM; i++) {
+//             if (key_state[i] == 1) {
+//                 printf("Key %d is pressed\n", i);
+//             }
+//         }
+//         keyboard_count = timer_read();
+//     }
+// }
 
-void feed_wdt_proc(void)
-{
-    feed_wdt();
-}
+// void feed_wdt_proc(void)
+// {
+//     feed_wdt();
+// }
 
 void main( )
 {
     UINT16 j = 0;
-    CfgFsys( );                                                                //CH554时钟选择配置
-    mDelaymS(20);                                                              //修改主频，建议稍加延时等主频稳定
+    system_init();                                                                //CH554时钟选择配置
+    delay_ms(20);                                                              //修改主频，建议稍加延时等主频稳定
     uart0_init();                                                              //串口0初始化
     printf("start\n");
     // usb_device_init();                                                         //USB设备初始化
-    // basic_init();                                                              //基本外设初始化
+    basic_init();                                                              //基本外设初始化
     // CH554WDTFeed(0x00);                                                        //看门狗复位时间设置
     // CH554WDTModeSelect(1);                                                     //看门狗作为复位
 	EA = 1;                                                                    //开启总中断

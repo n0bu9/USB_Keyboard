@@ -1,6 +1,7 @@
 #include "system_ch55x.h"
+#include "ch554.h"
 
-void SystemInit(void)
+void system_init(void)
 {
 #if OSC_EN_XT
 		SAFE_MOD = 0x55;
@@ -98,7 +99,7 @@ void delay_ms(uint16_t n)                                                  // ไป
             while ( ( TKEY_CTRL & bTKC_IF ) == 0 );
             while ( TKEY_CTRL & bTKC_IF );
     #else
-            mDelayuS( 1000 );
+            delay_us( 1000 );
     #endif
             -- n;
 	}
