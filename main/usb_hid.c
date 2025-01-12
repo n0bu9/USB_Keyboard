@@ -1,6 +1,5 @@
 #include "usb_hid.h"
 #include "main.h"
-#include "basic.h"
 #include "string.h"
 #include "stdio.h"
 #include "Debug.h"

@@ -1,7 +1,7 @@
 #ifndef __USB_HID_H__
 #define __USB_HID_H__
 
-#include "basic.h"
+#include "main.h"
 
 void usb_device_init(void);
 void hid_value_handle(void);

@@ -2,7 +2,6 @@
 #define KEYBOARD_H
 
 #include "main.h"
-#include "basic.h"
 
 typedef enum {
     KEY1_2 = 0,

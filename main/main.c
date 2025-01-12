@@ -14,11 +14,12 @@
 
 // application layer
 #include "timer.h"
+#include "uart.h"
 // #include "keyboard.h"
-#include "basic.h"
+//#include "basic.h"
 // #include "iap.h"
 // #include "main.h"
-// #include "usb_hid.h"
+#include "usb_hid.h"
 #include "stdio.h"
 // #include <string.h>
 
@@ -46,17 +47,13 @@ void led_flash(void)
 void uart_debug(void) {
     static uint16_t uart_count = 0;
     static uint8_t is_init = 1;   // 添加初始化标志
-    const uint8_t send_data[] = "uart_debug\r\n";
-    uint8_t send_size = 0;
 
     if (is_init) {
         uart_count = timer_read();
         is_init = 0;
     }
     if (timer_elapsed(uart_count) > 1000) {
-        for (send_size = 0; send_size < sizeof(send_data); send_size++) {
-            uart0_send_byte(send_data[send_size]);
-        }
+        uart_send_string(0, "uart_debug\r\n");
         uart_count = timer_read();
     }
 }
@@ -96,21 +93,22 @@ void main( )
     uart0_init();                                                              //串口0初始化
     ch55x_uart0_alter();                                                       //串口0引脚映射 RX-P1.2和TX-P1.3
     printf("start\r\n");
-    // usb_device_init();                                                      //USB设备初始化
+    usb_device_init();                                                         //USB设备初始化
     timer_init();                                                              //基本外设初始化
-    // CH554WDTFeed(0x00);                                                     //看门狗复位时间设置
-    // CH554WDTModeSelect(1);                                                  //看门狗作为复位
+    wdt_set_time(0x00);                                                        //看门狗复位时间设置
+    wdt_mode_select(1);                                                        //看门狗作为复位
 	EA = 1;                                                                    //开启总中断
 
     mTimer0RunCTL(1);                                                          //启动定时器0
-    i = timer_read();
+    usb_clear_flag();                                                          //清除USB标志
     while(1){
         // feed_wdt_proc();
         led_flash();
         // keyboard_test();
         // keyboard_scan();
         uart_debug();
-        // hid_value_handle();
+        hid_value_handle();
+        wdt_feed();                                                           //喂狗
     }
 }
 

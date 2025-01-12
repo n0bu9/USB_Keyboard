@@ -39,7 +39,7 @@ extern UINT16 Cap[8];
 #define CAP2Alter( )           (PIN_FUNC |= bT2EX_PIN_X;)                    //CAP2由P11 映射RST
 
 /*******************************************************************************
-* Function Name  : mTimer_x_ModInit(uint8_t x ,uint8_t mode)
+* Function Name  : timer_mod_init(uint8_t x ,uint8_t mode)
 * Description    : CH554定时计数器x模式设置
 * Input          : uint8_t mode,Timer模式选择
                    0：模式0，13位定时器，TLn的高3位无效
@@ -52,20 +52,20 @@ extern UINT16 Cap[8];
 * Return         : 成功  SUCCESS
                    失败  FAIL
 *******************************************************************************/
-uint8_t mTimer_x_ModInit(uint8_t x, uint8_t mode);
+uint8_t timer_mod_init(uint8_t x, uint8_t mode);
 
 /*******************************************************************************
-* Function Name  : mTimer_x_SetData
+* Function Name  : timer_set_data
 * Description    : CH554Timer 
 * Input          : uint8_t x,定时器 0 1 2
                    uint16_t dat,定时器赋值
 * Output         : None
 * Return         : None
 *******************************************************************************/
-void mTimer_x_SetData(uint8_t x,uint16_t dat);
+void timer_set_data(uint8_t x,uint16_t dat);
 
 /*******************************************************************************
-* Function Name  : CAP2Init(uint8_t mode)
+* Function Name  : timer_cap2_init(uint8_t mode)
 * Description    : CH554定时计数器2 T2EX引脚捕捉功能初始化
                    uint8_t mode,边沿捕捉模式选择
                    0:T2ex从下降沿到下一个下降沿
@@ -75,10 +75,10 @@ void mTimer_x_SetData(uint8_t x,uint16_t dat);
 * Output         : None
 * Return         : None
 *******************************************************************************/
-void CAP2Init(uint8_t mode);
+void timer_cap2_init(uint8_t mode);
 
 /*******************************************************************************
-* Function Name  : CAP1Init(uint8_t mode)
+* Function Name  : timer_cap1_init(uint8_t mode)
 * Description    : CH554定时计数器2 T2引脚捕捉功能初始化T2
                    uint8_t mode,边沿捕捉模式选择
                    0:T2ex从下降沿到下一个下降沿
@@ -88,6 +88,6 @@ void CAP2Init(uint8_t mode);
 * Output         : None
 * Return         : None
 *******************************************************************************/
-void CAP1Init(uint8_t mode);
+void timer_cap1_init(uint8_t mode);
 
 #endif

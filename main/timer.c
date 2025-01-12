@@ -6,8 +6,8 @@ static uint32d_t timer_count = 0;
 void timer_init(void)
 {
     mTimer0Clk12DivFsys();                                                     //Timer0时钟选择
-    mTimer_x_ModInit(0,1);                                                     //Timer0设置为16位定时器
-    mTimer_x_SetData(0,1000);                                                  //设置定时器0初值 = 1ms
+    timer_mod_init(0,1);                                                     //Timer0设置为16位定时器
+    timer_set_data(0,1000);                                                  //设置定时器0初值 = 1ms
     ET0 = 1;                                                                   //开启定时器0中断
 }
 
@@ -92,6 +92,6 @@ void timer_delay(uint32_t ms)
 void timer0_interrupt( void ) interrupt INT_NO_TMR0 using 3     //1MS         //timer0中断服务程序,使用寄存器组3
 {
     timer_count++;                                                             //清除定时器0中断标志
-    mTimer_x_SetData(0,1000);                                                  //设置定时器0初值 = 1ms
+    timer_set_data(0, 1000);                                                  //设置定时器0初值 = 1ms
 }
 
