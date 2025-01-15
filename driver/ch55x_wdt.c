@@ -1,9 +1,10 @@
 #include "ch55x_conf.h"
+#include "CH554.H"
 
 /*******************************************************************************
 * Function Name  : ch55x_wdt_mode_select(uint8_t mode)
 * Description    : CH554看门狗模式选择
-* Input          : uint8_t mode 
+* Input          : uint8_t mode
                    0  timer
                    1  watchDog
 * Output         : None
@@ -32,7 +33,7 @@ void wdt_mode_select(uint8_t mode)
 *******************************************************************************/
 void wdt_set_time(uint8_t tim)
 {
-   WDOG_COUNT = tim;                                                             //看门狗计数器赋值	
+   WDOG_COUNT = tim;                                                             //看门狗计数器赋值
 }
 
 /*******************************************************************************

@@ -611,18 +611,18 @@ void __hid_value_handle(void)
 }
 
 /*******************************************************************************
-* Function Name  : hid_value_handle()
+* Function Name  : hid_value_handle_proc()
 * Description    : HID数据上报函数(运行函数)
 * Input          : None
 * Output         : None
 * Return         : None
 *******************************************************************************/
-void hid_value_handle(void)
+void hid_value_handle_proc(void)
 {
     if(Ready&&(data_len>0)){
         __hid_value_handle();
         data_len--;
-        
+
     }else{
         return;
     }

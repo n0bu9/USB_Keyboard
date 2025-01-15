@@ -15,7 +15,7 @@
 // application layer
 #include "timer.h"
 #include "uart.h"
-// #include "keyboard.h"
+#include "keyboard.h"
 //#include "basic.h"
 // #include "iap.h"
 // #include "main.h"
@@ -25,7 +25,7 @@
 
 #pragma  NOAREGS
 
-void led_flash(void)
+void led_flash_proc(void)
 {
     static uint16_t led_count = 0;
     static uint8_t is_init = 1;   // 添加初始化标志
@@ -44,7 +44,8 @@ void led_flash(void)
     }
 }
 
-void uart_debug(void) {
+void uart_debug_proc(void)
+{
     static uint16_t uart_count = 0;
     static uint8_t is_init = 1;   // 添加初始化标志
 
@@ -58,32 +59,67 @@ void uart_debug(void) {
     }
 }
 
-// void keyboard_test(void)
-// {
-//     static uint16_t keyboard_count = 0;
-//     static uint8_t is_init = 1;   // 添加初始化标志
-//     uint8_t key_state[KEY_NUM];
-//     uint8_t i;
+void keyboard_proc(void)
+{
+    static uint16_t keyboard_count = 0;
+    static uint8_t is_init = 1;   // 添加初始化标志
+    key_rec_enum key;
 
-//     if (is_init) {
-//         keyboard_count = timer_read();
-//         is_init = 0;
-//     }
-//     if (timer_elapsed(keyboard_count) > 50) {
-//         keyboard_get_state(key_state);
-//         for (i = 0; i < KEY_NUM; i++) {
-//             if (key_state[i] == 1) {
-//                 printf("Key %d is pressed\n", i);
-//             }
-//         }
-//         keyboard_count = timer_read();
-//     }
-// }
+    if (is_init) {
+        keyboard_count = timer_read();
+        is_init = 0;
+    }
+    if (timer_elapsed(keyboard_count) > 2) {
+        key = keyboard_scan();
+        if (key != KEY_NONE) {
+            switch (key) {
+                case KEY_LOCK:
+                    break;
+                case KEY_DIVIDE:
+                    break;
+                case KEY_MULTIPLY:
+                    break;
+                case KEY_MINUS:
+                    break;
+                case KEY_PLUS:
+                    break;
+                case KEY_9:
+                    get_keyboard_data('9');
+                    break;
+                case KEY_8:
+                    break;
+                case KEY_7:
+                    break;
+                case KEY_6:
+                    break;
+                case KEY_5:
+                    get_keyboard_data('5');
+                    break;
+                case KEY_4:
+                    break;
+                case KEY_3:
+                    break;
+                case KEY_2:
+                    break;
+                case KEY_1:
+                    break;
+                case KEY_0:
+                    get_keyboard_data('0');
+                    break;
+                case KEY_DOT:
+                    break;
+                case KEY_ENTER:
+                    break;
+            }
+
+        }
+        keyboard_count = timer_read();
+    }
+}
 
 
 void main( )
 {
-    uint16_t i = 0;
     system_init();                                                             //CH554时钟选择配置
     delay_ms(20);                                                              //修改主频，建议稍加延时等主频稳定
     uart0_init();                                                              //串口0初始化
@@ -93,15 +129,16 @@ void main( )
     timer_init();                                                              //基本外设初始化
     wdt_set_time(0x00);                                                        //看门狗复位时间设置
     wdt_mode_select(1);                                                        //看门狗作为复位
+    keyboard_init();                                                           //键盘初始化
 	EA = 1;                                                                    //开启总中断
 
     mTimer0RunCTL(1);                                                          //启动定时器0
     usb_clear_flag();                                                          //清除USB标志
     while(1){
-        led_flash();
-        // keyboard_scan();
-        uart_debug();
-        hid_value_handle();
+        led_flash_proc();
+        //uart_debug_proc();
+        keyboard_proc();
+        hid_value_handle_proc();                                              //处理USB HID数据
 
         wdt_feed();                                                           //喂狗
     }

@@ -4,27 +4,41 @@
 #include "main.h"
 
 typedef enum {
-    KEY1_2 = 0,
-    KEY1_3,
-    KEY1_4,
-    KEY1_5,
-    KEY2_1,
-    KEY2_3,
-    KEY2_4,
-    KEY2_5,
-    KEY3_1,
-    KEY3_2,
-    KEY3_4,
-    KEY4_1,
-    KEY4_2,
-    KEY4_3,
-    KEY5_1,
-    KEY5_2,
-    KEY5_3,
-    KEY_NUM,
-} KEY_t;
+    ROWS_1 = 0, // P1.2
+    ROWS_2,     // P1.3
+    ROWS_3,     // P3.5
+    ROWS_4,     // P3.3
+    ROWS_5,     // P1.0
+    COLS_1,     // P3.0
+    COLS_2,     // P3.1
+    COLS_3,     // P1.4
+    COLS_4,     // P3.2
+    ARRAY_NUM
+} array_scan_enum;
+
+typedef enum {
+    KEY_LOCK = 0,
+    KEY_DIVIDE,
+    KEY_MULTIPLY,
+    KEY_MINUS,
+    KEY_PLUS,
+    KEY_9,
+    KEY_8,
+    KEY_7,
+    KEY_6,
+    KEY_5,
+    KEY_4,
+    KEY_3,
+    KEY_2,
+    KEY_1,
+    KEY_0,
+    KEY_DOT,
+    KEY_ENTER,
+    DRIVER_KEY_NUM,
+    KEY_NONE = 0xFF
+} key_rec_enum;
 
 void keyboard_init(void);
-void keyboard_scan(void);
+key_rec_enum keyboard_scan(void);
 
 #endif
