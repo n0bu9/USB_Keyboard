@@ -1,5 +1,13 @@
 #include "ch55x_conf.h"
 
+/*******************************************************************************
+* Function Name  : gpio_init()
+* Description    : 端口配置 
+* Input          : gpio_type: 端口和引脚
+                   gpio_mode_enum: GPIO模式
+* Output         : None
+* Return         : None
+*******************************************************************************/
 void gpio_init(gpio_type _io, gpio_mode_enum mode) //其初始化
 {
     #if defined(__C51__)
@@ -51,6 +59,14 @@ void gpio_init(gpio_type _io, gpio_mode_enum mode) //其初始化
 }
 
 #if defined(__C51__)
+/*******************************************************************************
+* Function Name  : gpio_digital_write()
+* Description    : 引脚写函数
+* Input          : gpio_type: 端口和引脚
+                   bool: 写入的值
+* Output         : None
+* Return         : None
+*******************************************************************************/
 void gpio_digital_write(gpio_type _io,bool value) //写函数
 {
     if (_io < PORT_DIVIDER) {
@@ -71,6 +87,13 @@ void gpio_digital_write(gpio_type _io,bool value) //写函数
 #endif
 
 #if defined(__C51__)
+/*******************************************************************************
+* Function Name  : gpio_digital_read()
+* Description    : 引脚读函数
+* Input          : gpio_type: 端口和引脚
+* Output         : None
+* Return         : bool: 读取的值
+*******************************************************************************/
 bool gpio_digital_read(gpio_type _io) //读函数
 {
     if (_io < PORT_DIVIDER) {

@@ -1,9 +1,9 @@
 #include "stdint.h"
-#include "keyboard.h"
-#include "gpio.h"                                               
-#include "Debug.H"
-#include "stdio.h"
 #include "string.h"
+#include "stdio.h"
+#include "ch55x_conf.h"
+
+#include "keyboard.h"
 
 #pragma  NOAREGS
 
@@ -18,11 +18,11 @@ static volatile uint8_t key_state[KEY_NUM];
 void keyboard_init(void) {
     // Initialize the keyboard
     // 开漏输入输出，有上拉
-    Port1Cfg(3,2);  // KEY_IO1
-    Port1Cfg(3,3);  // KEY_IO2
-    Port3Cfg(3,5);  // KEY_IO3
-    Port3Cfg(3,3);  // KEY_IO4
-    Port1Cfg(3,0);  // KEY_IO5
+    gpio_init(PORT_1_PIN_2, GPIO_OUT_INPUT_OD);  // KEY_IO1
+    gpio_init(PORT_1_PIN_3, GPIO_OUT_INPUT_OD);  // KEY_IO2
+    gpio_init(PORT_3_PIN_5, GPIO_OUT_INPUT_OD);  // KEY_IO3
+    gpio_init(PORT_3_PIN_3, GPIO_OUT_INPUT_OD);  // KEY_IO4
+    gpio_init(PORT_1_PIN_0, GPIO_OUT_INPUT_OD);  // KEY_IO5
 }
 
 void keyboard_scan(void) {
@@ -140,30 +140,3 @@ void keyboard_scan(void) {
     }   
 }
 
-// void keyboard_get_state(uint8_t *state) 
-// {
-//     memcpy(state, key_state, KEY_NUM);
-// }
-
-void keyboard_test_init(void) 
-{
-    Port1Cfg(3,2);  // KEY_IO1
-    Port1Cfg(3,3);  // KEY_IO2
-    Port3Cfg(3,5);  // KEY_IO3
-    Port3Cfg(3,3);  // KEY_IO4
-    KEY_IO4 = 0;
-    KEY_IO2 = KEY_IO3 = KEY_IO1 = 1;
-}
-
-// uint8_t keyboard_test_scan(void) 
-// {
-//     static uint8_t key_flag = 0;
-//     if (KEY_TEST == 1) {
-//         key_flag = 1;
-//     }
-//     else if (key_flag == 1 && KEY_TEST == 0) {
-//         key_flag = 0;
-//         return 1;
-//     }
-//     return 0;
-// }

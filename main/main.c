@@ -80,10 +80,6 @@ void uart_debug(void) {
 //     }
 // }
 
-// void feed_wdt_proc(void)
-// {
-//     feed_wdt();
-// }
 
 void main( )
 {
@@ -102,12 +98,11 @@ void main( )
     mTimer0RunCTL(1);                                                          //启动定时器0
     usb_clear_flag();                                                          //清除USB标志
     while(1){
-        // feed_wdt_proc();
         led_flash();
-        // keyboard_test();
         // keyboard_scan();
         uart_debug();
         hid_value_handle();
+
         wdt_feed();                                                           //喂狗
     }
 }
