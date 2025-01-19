@@ -31,7 +31,7 @@ void uart_send_string(uint8_t uart_x, const int8_t *str)
     }
 }
 
-#if DEBUG
+#if defined(DEBUG_UART_ISR)
 void query_uart0_interrupt(void) interrupt INT_NO_UART0 using 2             //UART0中断服务程序,使用寄存器组2
 {
     uint8_t rec;

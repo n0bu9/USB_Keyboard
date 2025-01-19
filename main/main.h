@@ -4,7 +4,8 @@
 #include "stdint.h"
 #include "CH554.H"
 
-#define DEBUG   1
+#define DEBUG
+// #define DEBUG_UART_ISR
 
 
 #endif

@@ -18,7 +18,7 @@
 #include "keyboard.h"
 //#include "basic.h"
 // #include "iap.h"
-// #include "main.h"
+#include "main.h"
 #include "usb_hid.h"
 #include "stdio.h"
 // #include <string.h>
@@ -63,19 +63,21 @@ void keyboard_proc(void)
 {
     static uint16_t keyboard_count = 0;
     static uint8_t is_init = 1;   // 添加初始化标志
-    key_rec_enum key;
+    key_rec_enum key = KEY_NONE;
 
     if (is_init) {
         keyboard_count = timer_read();
         is_init = 0;
     }
-    if (timer_elapsed(keyboard_count) > 2) {
+    if (timer_elapsed(keyboard_count) > 100) {
         key = keyboard_scan();
         if (key != KEY_NONE) {
             switch (key) {
                 case KEY_LOCK:
+                    // uart_send_string(0, "LOCK\r\n");
                     break;
                 case KEY_DIVIDE:
+                    // uart_send_string(0, "DIVIDE\r\n");
                     break;
                 case KEY_MULTIPLY:
                     break;
@@ -87,21 +89,28 @@ void keyboard_proc(void)
                     get_keyboard_data('9');
                     break;
                 case KEY_8:
+                    get_keyboard_data('8');
                     break;
                 case KEY_7:
+                    get_keyboard_data('7');
                     break;
                 case KEY_6:
+                    get_keyboard_data('6');
                     break;
                 case KEY_5:
                     get_keyboard_data('5');
                     break;
                 case KEY_4:
+                    get_keyboard_data('4');
                     break;
                 case KEY_3:
+                    get_keyboard_data('3');
                     break;
                 case KEY_2:
+                    get_keyboard_data('2');
                     break;
                 case KEY_1:
+                    get_keyboard_data('1');
                     break;
                 case KEY_0:
                     get_keyboard_data('0');
@@ -136,7 +145,7 @@ void main( )
     usb_clear_flag();                                                          //清除USB标志
     while(1){
         led_flash_proc();
-        //uart_debug_proc();
+        // uart_debug_proc();
         keyboard_proc();
         hid_value_handle_proc();                                              //处理USB HID数据
 

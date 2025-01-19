@@ -204,7 +204,7 @@ void device_interrupt(void) interrupt INT_NO_USB using 1                        
                                 pDescr = hid_report_descriptor;                        //数据准备上传
                                 len = sizeof(hid_report_descriptor);
                                 Ready = 1;                                  //如果有更多接口，该标准位应该在最后一个接口配置完成后有效
-                                #if DEBUG
+                                #if defined(DEBUG_UART_ISR)
                                 ES = 1;                                     //开启串口中断
                                 #endif
                             }
