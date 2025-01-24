@@ -11,8 +11,11 @@
 
 #define bool bit
 #define uint8_t unsigned char
+#define UINT8_MAX 0xFF
 #define uint16_t unsigned short
+#define UINT16_MAX 0xFFFF
 #define uint32_t unsigned long
+#define UINT32_MAX 0xFFFFFFFF
 #define uint8d_t UINT8D
 #define uint16d_t UINT16D
 #define uint32d_t UINT32D

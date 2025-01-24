@@ -3,18 +3,16 @@
 
 #include "main.h"
 
-// typedef enum {
-//     ROWS_1 = 0, // P1.2
-//     ROWS_2,     // P1.3
-//     ROWS_3,     // P3.5
-//     ROWS_4,     // P3.3
-//     ROWS_5,     // P1.0
-//     COLS_1,     // P3.0
-//     COLS_2,     // P3.1
-//     COLS_3,     // P1.4
-//     COLS_4,     // P3.2
-//     ARRAY_NUM
-// } array_scan_enum;
+#if (MATRIX_COLS <= 8)
+typedef uint8_t matrix_row_t;
+#elif (MATRIX_COLS <= 16)
+typedef uint16_t matrix_row_t;
+#elif (MATRIX_COLS <= 32)
+typedef uint32_t matrix_row_t;
+#else
+#    error "MATRIX_COLS: invalid value"
+#endif
+
 
 #define ROWS_1 PORT_3_PIN_0
 #define ROWS_2 PORT_3_PIN_1
@@ -49,6 +47,10 @@ typedef enum {
 } key_rec_enum;
 
 void keyboard_init(void);
-key_rec_enum keyboard_scan(void);
+key_rec_enum keyboard_scan_line1(void);
+key_rec_enum keyboard_scan_line2(void);
+key_rec_enum keyboard_scan_line3(void);
+key_rec_enum keyboard_scan_line4(void);
+key_rec_enum keyboard_scan_all(void);
 
 #endif
