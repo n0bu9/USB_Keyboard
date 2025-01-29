@@ -215,17 +215,11 @@ void keyboard_scan_line(uint8_t line)
  */
 void keyboard_scan_all(void)
 {
-    // int i = 0;
     memcpy(last_raw_key_state, raw_key_state, sizeof(matrix_row_t)*MATRIX_ROWS);
     __keyboard_scan_line0();
     __keyboard_scan_line1();
     __keyboard_scan_line2();
     __keyboard_scan_line3();
-    // for (i = 0; i < MATRIX_ROWS; i++) {
-    //     uart_send_byte(0, raw_key_state[i] + '0');
-    //     uart_send_string(0, "\r\n");
-    // }
-
 }
 
 bool if_state_changed(void)

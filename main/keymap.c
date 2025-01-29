@@ -16,12 +16,24 @@ const uint16_t keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
             }
 };
 
-void report_key_by_map(uint16_t which_row, matrix_row_t cols_mask) 
+void report_key_by_map(matrix_row_t *cooked_key_state) 
 {
-    matrix_row_t j = 0;
-    for (j = 0; j < MATRIX_COLS; j++) {
-        if (cols_mask & (1 << j)) {
-            get_keyboard_data('A');
+    uint16_t i = 0;
+    uint16_t j = 0;
+    uint16_t kc_none_times = 0;
+    for (i = 0; i < MATRIX_ROWS; i++) {
+        if (cooked_key_state[i] != 0) {
+            for (j = 0; j < MATRIX_COLS; j++) {
+                if (cooked_key_state[i] & (1 << j)) {
+                    keycode_input(keymaps[0][i][j]);
+                }
+            }
+        }else {
+            kc_none_times++;
         }
     }
+    if (kc_none_times >= MATRIX_ROWS) {
+        keycode_input(KC_NONE);
+    }
 }
+

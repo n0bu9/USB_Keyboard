@@ -61,44 +61,23 @@ void uart_debug_proc(void)
 
 void keyboard_proc(void)
 {
-    static uint16_t time = 0;
     static bool is_init = 1;   // 添加初始化标志
     static volatile matrix_row_t *raw_key_state;
     static volatile matrix_row_t *cooked_key_state;
-    uint16_t i = 0;
     bool changed = FALSE;
     bool cooked_changed = FALSE;
+    bool is_key_none = FALSE;
 
     if (is_init) {
         is_init = 0;
-        time = timer_read();
         raw_key_state = get_raw_key_state_ptr();
         cooked_key_state = get_cooked_key_state_ptr();
     }
-    if (timer_elapsed(time) > 500) {
-        time = timer_read();
-        for (i = 0; i < MATRIX_ROWS; i++)
-        {
-            // report_key_by_map(i, cooked_key_state[i]);
-            uart_send_byte(0, raw_key_state[i] + '0');
-            uart_send_string(0, "\r\n");
-        }
-    }
     keyboard_scan_all();
     changed = if_state_changed();
-    if (changed){
-        uart_send_string(0, "True\r\n");
-    }
+    if (changed) uart_send_string(0, "True\r\n");
     cooked_changed = sym_defer_get_debounce(raw_key_state, cooked_key_state, MATRIX_ROWS, changed);
-    if (cooked_changed) {
-        for (i = 0; i < MATRIX_ROWS; i++) {
-            if (cooked_key_state[i]) {
-            // uart_send_byte(0, cooked_key_state[i] + '0');
-            // uart_send_string(0, "\r\n");
-                report_key_by_map(i, cooked_key_state[i]);
-            }
-        }
-    }
+    if (cooked_changed) report_key_by_map(cooked_key_state);
 }
 
 
@@ -106,9 +85,11 @@ void main( )
 {
     system_init();                                                             //CH554时钟选择配置
     delay_ms(20);                                                              //修改主频，建议稍加延时等主频稳定
-    uart0_init();                                                              //串口0初始化
-    ch55x_uart0_alter();                                                       //串口0引脚映射 RX-P1.2和TX-P1.3
-    printf("start\r\n");
+    #ifdef DEBUG
+        uart0_init();                                                              //串口0初始化
+        ch55x_uart0_alter();                                                       //串口0引脚映射 RX-P1.2和TX-P1.3
+        printf("start\r\n");
+    #endif
     usb_device_init();                                                         //USB设备初始化
     timer_init();                                                              //基本外设初始化
     wdt_set_time(0x00);                                                        //看门狗复位时间设置

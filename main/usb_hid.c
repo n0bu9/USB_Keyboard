@@ -76,6 +76,7 @@ uint8_t config_descriptor[34] = {
 
 /*键盘数据*/
 static uint8_t HIDKey[8] = {0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0};
+static uint8_t HIDKey_last[8] = {0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0};
 uint8_t data_buf[BUFMAX] = {0};
 uint16_t data_len = 0;
 uint16_t send_point = 0;
@@ -654,4 +655,23 @@ void get_keyboard_data(uint8_t in_data)
     if(recv_point>=BUFMAX) recv_point = 0;
 }
 
+
+void keycode_input(key_code_enum keycode)
+{
+    if (keycode >= KC_LEFT_CTRL && keycode <= KC_RIGHT_GUI) {
+        HIDKey[0] = keycode;
+        return;
+    }else {
+        HIDKey[2] = keycode;
+    }
+
+    if (memcmp(HIDKey, HIDKey_last, sizeof(HIDKey)) != 0) {  // 如果HIDKey与HIDKey_last不相等，则重新发送
+        FLAG = 0;
+	    enp1_in_evt();
+	    while(FLAG == 0);
+	    FLAG = 0;
+    }
+    memcpy(HIDKey_last, HIDKey, sizeof(HIDKey));
+    memset(&HIDKey[0],0,8);
+}
 

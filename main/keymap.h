@@ -133,10 +133,18 @@ typedef enum {
     KC_VOLUME_UP, // volume up
     KC_VOLUME_DOWN, // volume down
 
-    KC_LEFT_SHIFT = 0xE1,
+    KC_LEFT_CTRL = 0xE0,  // left ctrl
+    KC_LEFT_SHIFT = 0xE1, // left shift
+    KC_LEFT_ALT = 0xE2, // left alt
+    KC_LEFT_GUI = 0xE3, // left gui
+    KC_RIGHT_CTRL = 0xE4, // right ctrl
+    KC_RIGHT_SHIFT = 0xE5, // right shift
+    KC_RIGHT_ALT = 0xE6, // right alt
+    KC_RIGHT_GUI = 0xE7, // right gui
+
     KC_NONE = 0
 }key_code_enum;
 
-void report_key_by_map(uint16_t which_row, matrix_row_t cols_mask);
+void report_key_by_map(matrix_row_t *cooked_key_state);
 
 #endif

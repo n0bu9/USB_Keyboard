@@ -7,7 +7,7 @@
 #define MATRIX_ROWS 5
 #define MATRIX_COLS 4
 
-#define DEBUG
+// #define DEBUG
 // #define DEBUG_UART_ISR
 
 
