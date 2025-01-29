@@ -8,6 +8,8 @@
 #define FAIL    0xFF
 #define START   1
 #define STOP    0
+#define TRUE    1
+#define FALSE   0
 
 #define bool bit
 #define uint8_t unsigned char

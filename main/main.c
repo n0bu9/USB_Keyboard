@@ -4,10 +4,6 @@
 * Version            : V1.1
 * Date               : 2017/11/18
 * Description        : GPIO 设置与使用和GPIO中断使用示例
-*********************************************************************************
-* Copyright (c) 2021 Nanjing Qinheng Microelectronics Co., Ltd.
-* Attention: This software (modified or not) and binary are used for
-* microcontroller manufactured by Nanjing Qinheng Microelectronics.
 ********************************************************************************/
 // driver layer
 #include "ch55x_conf.h"
@@ -16,113 +12,92 @@
 #include "timer.h"
 #include "uart.h"
 #include "keyboard.h"
-//#include "basic.h"
-// #include "iap.h"
+#include "debounce.h"
 #include "main.h"
 #include "usb_hid.h"
 #include "stdio.h"
-// #include <string.h>
+#include "string.h"
+#include "keymap.h"
 
 #pragma  NOAREGS
 
+extern volatile matrix_row_t raw_key_state[MATRIX_ROWS];
+extern volatile matrix_row_t cooked_key_state[MATRIX_ROWS];
+
 void led_flash_proc(void)
 {
-    static uint16_t led_count = 0;
+    static uint16_t time = 0;
     static uint8_t is_init = 1;   // 添加初始化标志
     static gpio_type led0;
 
     if(is_init) {                 // 首次运行时初始化
-        led_count = timer_read();
         is_init = 0;
+        time = timer_read();
         led0 = PORT_3_PIN_0;
         gpio_init(led0, GPIO_OUT_INPUT_PP);
     }
 
-    if(timer_elapsed(led_count) > 1000) {
+    if(timer_elapsed(time) > 1000) {
         gpio_digital_write(led0, !gpio_digital_read(led0));
-        led_count = timer_read();
+        time = timer_read();
     }
 }
 
 void uart_debug_proc(void)
 {
-    static uint16_t uart_count = 0;
+    static uint16_t time = 0;
     static uint8_t is_init = 1;   // 添加初始化标志
+    // int8_t debug_str[30];
+    int i = 0;
 
     if (is_init) {
-        uart_count = timer_read();
+        time = timer_read();
         is_init = 0;
     }
-    if (timer_elapsed(uart_count) > 1000) {
-        uart_send_string(0, "uart_debug\r\n");
-        uart_count = timer_read();
+    if (timer_elapsed(time) > 500) {
+        time = timer_read();
     }
 }
 
 void keyboard_proc(void)
 {
-    static uint16_t keyboard_count = 0;
-    static uint8_t is_init = 1;   // 添加初始化标志
-    key_rec_enum key = KEY_NONE;
+    static uint16_t time = 0;
+    static bool is_init = 1;   // 添加初始化标志
+    static volatile matrix_row_t *raw_key_state;
+    static volatile matrix_row_t *cooked_key_state;
+    uint16_t i = 0;
+    bool changed = FALSE;
+    bool cooked_changed = FALSE;
 
     if (is_init) {
-        keyboard_count = timer_read();
         is_init = 0;
+        time = timer_read();
+        raw_key_state = get_raw_key_state_ptr();
+        cooked_key_state = get_cooked_key_state_ptr();
     }
-    if (timer_elapsed(keyboard_count) > 100) {
-        key = keyboard_scan();
-        if (key != KEY_NONE) {
-            switch (key) {
-                case KEY_LOCK:
-                    // uart_send_string(0, "LOCK\r\n");
-                    break;
-                case KEY_DIVIDE:
-                    // uart_send_string(0, "DIVIDE\r\n");
-                    break;
-                case KEY_MULTIPLY:
-                    break;
-                case KEY_MINUS:
-                    break;
-                case KEY_PLUS:
-                    break;
-                case KEY_9:
-                    get_keyboard_data('9');
-                    break;
-                case KEY_8:
-                    get_keyboard_data('8');
-                    break;
-                case KEY_7:
-                    get_keyboard_data('7');
-                    break;
-                case KEY_6:
-                    get_keyboard_data('6');
-                    break;
-                case KEY_5:
-                    get_keyboard_data('5');
-                    break;
-                case KEY_4:
-                    get_keyboard_data('4');
-                    break;
-                case KEY_3:
-                    get_keyboard_data('3');
-                    break;
-                case KEY_2:
-                    get_keyboard_data('2');
-                    break;
-                case KEY_1:
-                    get_keyboard_data('1');
-                    break;
-                case KEY_0:
-                    get_keyboard_data('0');
-                    break;
-                case KEY_DOT:
-                    break;
-                case KEY_ENTER:
-                    break;
-            }
-
+    if (timer_elapsed(time) > 500) {
+        time = timer_read();
+        for (i = 0; i < MATRIX_ROWS; i++)
+        {
+            // report_key_by_map(i, cooked_key_state[i]);
+            uart_send_byte(0, raw_key_state[i] + '0');
+            uart_send_string(0, "\r\n");
         }
-        keyboard_count = timer_read();
+    }
+    keyboard_scan_all();
+    changed = if_state_changed();
+    if (changed){
+        uart_send_string(0, "True\r\n");
+    }
+    cooked_changed = sym_defer_get_debounce(raw_key_state, cooked_key_state, MATRIX_ROWS, changed);
+    if (cooked_changed) {
+        for (i = 0; i < MATRIX_ROWS; i++) {
+            if (cooked_key_state[i]) {
+            // uart_send_byte(0, cooked_key_state[i] + '0');
+            // uart_send_string(0, "\r\n");
+                report_key_by_map(i, cooked_key_state[i]);
+            }
+        }
     }
 }
 
@@ -144,7 +119,7 @@ void main( )
     mTimer0RunCTL(1);                                                          //启动定时器0
     usb_clear_flag();                                                          //清除USB标志
     while(1){
-        led_flash_proc();
+        // led_flash_proc();
         // uart_debug_proc();
         keyboard_proc();
         hid_value_handle_proc();                                              //处理USB HID数据

@@ -8,7 +8,9 @@
 
 
 #if USE_UART0_ENABLE
-#define  UART0_BUAD    57600                // UART0波特率
+#ifndef UART0_BUAD
+    #define  UART0_BUAD    57600                // UART0默认波特率
+#endif
 
 void uart0_init(void);
 void ch55x_uart0_alter(void);

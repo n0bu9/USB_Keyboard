@@ -2,6 +2,7 @@
 #define __USB_HID_H__
 
 #include "main.h"
+#include "keymap.h"
 
 void usb_device_init(void);
 void hid_value_handle_proc(void);

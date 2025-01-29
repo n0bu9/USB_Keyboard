@@ -31,6 +31,22 @@ void uart_send_string(uint8_t uart_x, const int8_t *str)
     }
 }
 
+void uart_send_byte(uint8_t uart_x, uint8_t byte)
+{
+    if(uart_x == 0)
+    {
+        #if USE_UART0_ENABLE
+        uart0_send_byte(byte);
+        #endif
+    }
+    else if(uart_x == 1)
+    {
+        #if USE_UART1_ENABLE
+        uart1_send_byte(byte);
+        #endif
+    }
+}
+
 #if defined(DEBUG_UART_ISR)
 void query_uart0_interrupt(void) interrupt INT_NO_UART0 using 2             //UART0中断服务程序,使用寄存器组2
 {

@@ -52,7 +52,7 @@ uint32_t timer_read32(void) {
     return t;
 }
 
-// 以16位读取定时器0计数
+// 以16位计算时间差
 uint16_t timer_elapsed(uint16_t last)
 {
     uint32_t t;
@@ -67,7 +67,7 @@ uint16_t timer_elapsed(uint16_t last)
     return TIMER_DIFF_16((t & 0xFFFF), last);
 }
 
-// 以32位读取定时器0计数
+// 以32位计算时间差
 uint32_t timer_elapsed32(uint32_t last)
 {
     uint32_t t;

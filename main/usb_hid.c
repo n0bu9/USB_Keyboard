@@ -1,8 +1,6 @@
 #include "usb_hid.h"
 #include "main.h"
 #include "string.h"
-#include "stdio.h"
-#include "Debug.h"
 
 #define THIS_ENDP0_SIZE         DEFAULT_ENDP0_SIZE
 #define BUFMAX 8
@@ -408,6 +406,13 @@ void device_interrupt(void) interrupt INT_NO_USB using 1                        
     }
 }
 
+void key_code_correspond(key_code_enum keyCode)
+{
+    if (keyCode != KC_NONE) {
+        HIDKey[2] = keyCode;
+    }
+}
+
 /*******************************************************************************
 * Function Name  : key_code_correspond()
 * Description    : 键码比对表，由数值对应键盘值。
@@ -415,7 +420,7 @@ void device_interrupt(void) interrupt INT_NO_USB using 1                        
 * Output         : None
 * Return         : None
 *******************************************************************************/
-void key_code_correspond(uint8_t keyCode)
+void _key_code_correspond(uint8_t keyCode)
 {
 	HIDKey[0] = 0;
 	if((keyCode>='a')&&(keyCode<='z')){                                       //键值a-z
@@ -596,7 +601,14 @@ void usb_clear_flag(void)
 *******************************************************************************/
 void __hid_value_handle(void)
 {
-	key_code_correspond(data_buf[send_point]);
+    if (data_buf[send_point] == KC_LEFT_SHIFT) {
+        HIDKey[0] = 0x02;	
+        send_point++;
+	    if(send_point>=BUFMAX) send_point=0;
+        return;
+    }else {
+        _key_code_correspond(data_buf[send_point]);
+    }
 
 	send_point++;
 	if(send_point>=BUFMAX) send_point=0;
