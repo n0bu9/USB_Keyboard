@@ -656,13 +656,20 @@ void get_keyboard_data(uint8_t in_data)
 }
 
 
-void keycode_input(key_code_enum keycode)
+void keycode_input(key_code_enum keycode[], uint8_t keycode_len)
 {
-    if (keycode >= KC_LEFT_CTRL && keycode <= KC_RIGHT_GUI) {
-        HIDKey[0] = keycode;
-        return;
-    }else {
-        HIDKey[2] = keycode;
+    uint8_t i = 0;
+    uint8_t j = 2;  // 根据HID报文--从HIDKey[2]开始存储
+    for (i = 0; i < keycode_len; i++) {
+        if (keycode[i] >= KC_LEFT_CTRL && keycode[i] <= KC_RIGHT_GUI) {
+            HIDKey[0] |= 1 << (keycode[i] - KC_LEFT_CTRL);
+        }else {
+            HIDKey[j] = keycode[i];
+            j++;
+        }
+        if (j > 8) {
+            break;
+        }
     }
 
     if (memcmp(HIDKey, HIDKey_last, sizeof(HIDKey)) != 0) {  // 如果HIDKey与HIDKey_last不相等，则重新发送
@@ -673,5 +680,17 @@ void keycode_input(key_code_enum keycode)
     }
     memcpy(HIDKey_last, HIDKey, sizeof(HIDKey));
     memset(&HIDKey[0],0,8);
+    if (i < keycode_len) {
+        keycode_input(keycode + i, keycode_len - i);
+    }
+}
+
+void keycode_input_none(void)
+{
+    FLAG = 0;
+	enp1_in_evt();
+	while(FLAG == 0);
+	FLAG = 0;
+    memset(&HIDKey_last[0],0,8);
 }
 

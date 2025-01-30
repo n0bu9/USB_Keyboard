@@ -75,7 +75,9 @@ void keyboard_proc(void)
     }
     keyboard_scan_all();
     changed = if_state_changed();
-    if (changed) uart_send_string(0, "True\r\n");
+    #ifdef DEBUG
+        if (changed) uart_send_string(0, "True\r\n");
+    #endif
     cooked_changed = sym_defer_get_debounce(raw_key_state, cooked_key_state, MATRIX_ROWS, changed);
     if (cooked_changed) report_key_by_map(cooked_key_state);
 }
