@@ -5,8 +5,6 @@
 #include "keymap.h"
 
 void usb_device_init(void);
-void hid_value_handle_proc(void);
-void get_keyboard_data(uint8_t in_data);
 void usb_clear_flag(void);
 void keycode_input(key_code_enum keycode[], uint8_t keycode_len);
 void keycode_input_none(void);

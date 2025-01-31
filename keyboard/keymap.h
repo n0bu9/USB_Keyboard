@@ -6,7 +6,11 @@
 #include "matrix.h"
 
 typedef enum {
-    KC_a_A = 4, // a A
+    KC_NONE = 0,  // reserved
+    KC_ERR_ROLLOVER, // error rollover
+    KC_POST_FAIL, // post fail
+    KC_ERR_UNDEFINED, // error undefined
+    KC_a_A, // a A
     KC_b_B, // b B
     KC_c_C, // c C
     KC_d_D, // d D
@@ -132,6 +136,22 @@ typedef enum {
     KC_MUTE, // mute
     KC_VOLUME_UP, // volume up
     KC_VOLUME_DOWN, // volume down
+    KC_LOCK_CAPS_LOCK, // caps lock 
+    KC_LOCK_NUM_LOCK, // num lock
+    KC_LOCK_SCROLL_LOCK, // scroll lock
+    KC_P_COMMA, // pad ,
+    KC_P_EQUAL_SIGN, // pad =
+    KC_INTERNATIONAL_1,
+    KC_INTERNATIONAL_2,
+    KC_INTERNATIONAL_3,
+    KC_INTERNATIONAL_4,
+    KC_INTERNATIONAL_5,
+    KC_INTERNATIONAL_6,
+    KC_INTERNATIONAL_7,
+    KC_INTERNATIONAL_8,
+    KC_INTERNATIONAL_9,
+    KC_LONG1,
+    KC_LONG2,
 
     KC_LEFT_CTRL = 0xE0,  // left ctrl
     KC_LEFT_SHIFT = 0xE1, // left shift
@@ -140,9 +160,7 @@ typedef enum {
     KC_RIGHT_CTRL = 0xE4, // right ctrl
     KC_RIGHT_SHIFT = 0xE5, // right shift
     KC_RIGHT_ALT = 0xE6, // right alt
-    KC_RIGHT_GUI = 0xE7, // right gui
-
-    KC_NONE = 0
+    KC_RIGHT_GUI = 0xE7  // right gui
 }key_code_enum;
 
 void report_key_by_map(matrix_row_t *cooked_key_state);

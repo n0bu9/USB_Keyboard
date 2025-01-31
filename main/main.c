@@ -1,10 +1,3 @@
-/********************************** (C) COPYRIGHT *******************************
-* File Name          : Main.C
-* Author             : WCH
-* Version            : V1.1
-* Date               : 2017/11/18
-* Description        : GPIO 设置与使用和GPIO中断使用示例
-********************************************************************************/
 // driver layer
 #include "ch55x_conf.h"
 
@@ -105,7 +98,6 @@ void main( )
         // led_flash_proc();
         // uart_debug_proc();
         keyboard_proc();
-        hid_value_handle_proc();                                              //处理USB HID数据
 
         wdt_feed();                                                           //喂狗
     }

@@ -9,15 +9,39 @@
 static uint8_t xdata Ep0Buffer[8>(THIS_ENDP0_SIZE+2)?8:(THIS_ENDP0_SIZE+2)] _at_ 0x0000;    //端点0 OUT&IN缓冲区，必须是偶地址
 static uint8_t xdata Ep1Buffer[64>(MAX_PACKET_SIZE+2)?64:(MAX_PACKET_SIZE+2)] _at_ 0x000a;  //端点1 OUT&IN缓冲区，必须是偶地址
 
-uint8_t hid_report_descriptor[62] = {
-    0x05,0x01,0x09,0x06,0xA1,0x01,0x05,0x07,
-    0x19,0xe0,0x29,0xe7,0x15,0x00,0x25,0x01,
-    0x75,0x01,0x95,0x08,0x81,0x02,0x95,0x01,
-    0x75,0x08,0x81,0x01,0x95,0x03,0x75,0x01,
-    0x05,0x08,0x19,0x01,0x29,0x03,0x91,0x02,
-    0x95,0x05,0x75,0x01,0x91,0x01,0x95,0x06,
-    0x75,0x08,0x26,0xff,0x00,0x05,0x07,0x19,
-    0x00,0x29,0x91,0x81,0x00,0xC0
+uint8_t hid_report_descriptor[] = {
+    0x05, 0x01,        // Usage Page (Generic Desktop Ctrls)
+    0x09, 0x06,        // Usage (Keyboard)
+    0xA1, 0x01,        // Collection (Application)
+    //0x85, 0x01,        // Report ID (1)
+    0x05, 0x07,        //   Usage Page (Kbrd/Keypad)
+    0x19, 0xE0,        //   Usage Minimum (0xE0)
+    0x29, 0xE7,        //   Usage Maximum (0xE7)
+    0x15, 0x00,        //   Logical Minimum (0)
+    0x25, 0x01,        //   Logical Maximum (1)
+    0x75, 0x01,        //   Report Size (1)
+    0x95, 0x08,        //   Report Count (8)
+    0x81, 0x02,        //   Input (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position)
+    0x95, 0x01,        //   Report Count (1)
+    0x75, 0x08,        //   Report Size (8)
+    0x81, 0x01,        //   Input (Const,Array,Abs,No Wrap,Linear,Preferred State,No Null Position)
+    0x95, 0x03,        //   Report Count (3)
+    0x75, 0x01,        //   Report Size (1)
+    0x05, 0x08,        //   Usage Page (LEDs)
+    0x19, 0x01,        //   Usage Minimum (Num Lock)
+    0x29, 0x03,        //   Usage Maximum (Scroll Lock)
+    0x91, 0x02,        //   Output (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position,Non-volatile)
+    0x95, 0x05,        //   Report Count (5)
+    0x75, 0x01,        //   Report Size (1)
+    0x91, 0x01,        //   Output (Const,Array,Abs,No Wrap,Linear,Preferred State,No Null Position,Non-volatile)
+    0x95, 0x06,        //   Report Count (6)
+    0x75, 0x08,        //   Report Size (8)
+    0x26, 0xFF, 0x00,  //   Logical Maximum (255)
+    0x05, 0x07,        //   Usage Page (Kbrd/Keypad)
+    0x19, 0x00,        //   Usage Minimum (0x00)
+    0x29, 0x91,        //   Usage Maximum (0x91)
+    0x81, 0x00,        //   Input (Data,Array,Abs,No Wrap,Linear,Preferred State,No Null Position)
+    0xC0               // End Collection
 };
 
 uint8_t device_descriptor[18] = {
@@ -77,10 +101,6 @@ uint8_t config_descriptor[34] = {
 /*键盘数据*/
 static uint8_t HIDKey[8] = {0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0};
 static uint8_t HIDKey_last[8] = {0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0};
-uint8_t data_buf[BUFMAX] = {0};
-uint16_t data_len = 0;
-uint16_t send_point = 0;
-uint16_t recv_point = 0;
 static uint8_t SetupReq = 0,SetupLen = 0,Ready = 0,Count = 0,FLAG = 0,UsbConfig = 0;
 static uint8_t LED_VALID = 0;
 static uint8_t *pDescr; // USB配置标志
@@ -407,177 +427,6 @@ void device_interrupt(void) interrupt INT_NO_USB using 1                        
     }
 }
 
-void key_code_correspond(key_code_enum keyCode)
-{
-    if (keyCode != KC_NONE) {
-        HIDKey[2] = keyCode;
-    }
-}
-
-/*******************************************************************************
-* Function Name  : key_code_correspond()
-* Description    : 键码比对表，由数值对应键盘值。
-* Input          : UINT8 keyCode
-* Output         : None
-* Return         : None
-*******************************************************************************/
-void _key_code_correspond(uint8_t keyCode)
-{
-	HIDKey[0] = 0;
-	if((keyCode>='a')&&(keyCode<='z')){                                       //键值a-z
-
-		if(LED_VALID&0x02)
-		{
-			FLAG = 0;
-			HIDKey[2] = 0x39;
-			enp1_in_evt();
-			while(FLAG == 0);
-			FLAG = 0;
-			memset(&HIDKey[0],0,8);
-			enp1_in_evt();
-			while(FLAG == 0);
-		}
-		keyCode -= 0x5D;
-		HIDKey[2] = keyCode;
-
-	}else if((keyCode>='A')&&(keyCode<='Z')){
-		if((LED_VALID&0x02) == 0){
-			FLAG = 0;
-			HIDKey[2] = 0x39;
-			enp1_in_evt();
-			while(FLAG == 0);
-			FLAG = 0;
-			memset(&HIDKey[0],0,8);
-			enp1_in_evt();
-			while(FLAG == 0);
-		}
-	    keyCode -= 0x3D;
-        HIDKey[2] = keyCode;
-        // HIDKey[0]	= 0x02;	                                                  //shift+
-    }else if((keyCode>='1')&&(keyCode<='9')){
-		keyCode -= 0x13;                                                        //字母区数字键
-		HIDKey[2] = keyCode;
-	}else if(keyCode=='0'){
-		HIDKey[2] = 0x27;
-	}else if(keyCode <= 0x2f){
-		if(keyCode == 0x20){
-			HIDKey[2] = 0x2C;                                                     //空格
-		}else if(keyCode == 0x21){//'!'
-			HIDKey[2] = 0x1E;
-			HIDKey[0]	= 0x02;	                                                  //shift+
-		}else if(keyCode == 0x22){//'"'
-			HIDKey[2] = 0x34;
-			HIDKey[0]	= 0x02;	                                                  //shift+
-		}else if(keyCode == 0x23){//'#'
-			HIDKey[2] = 0x20;
-			HIDKey[0]	= 0x02;	                                                  //shift+
-		}else if(keyCode == 0x24){//'$'
-			HIDKey[2] = 0x21;
-			HIDKey[0]	= 0x02;	                                                  //shift+
-		}else if(keyCode == 0x25){//'%'
-			HIDKey[2] = 0x22;
-			HIDKey[0]	= 0x02;	                                                  //shift+
-		}else if(keyCode == 0x26){//'&'
-			HIDKey[2] = 0x24;
-			HIDKey[0]	= 0x02;	                                                  //shift+
-		}else if(keyCode == 0x27){//'%'
-			HIDKey[2] = 0x34;
-		}else if(keyCode == 0x28){/*(*/
-			HIDKey[2] = 0x26;
-			HIDKey[0]	= 0x02;	                                                  //shift+
-		}else if(keyCode == 0x29){/*)*/
-			HIDKey[2] = 0x27;
-			HIDKey[0]	= 0x02;	                                                  //shift+
-		}else if(keyCode == 0x2a){/***/
-			HIDKey[2] = 0x25;
-			HIDKey[0]	= 0x02;	                                                  //shift+
-		}else if(keyCode == 0x2b){/*+*/
-			HIDKey[2] = 0x2e;
-			HIDKey[0]	= 0x02;	                                                  //shift+
-		}else if(keyCode == 0x2c){/*,*/
-			HIDKey[2] = 0x36;
-		}else if(keyCode == 0x2d){/*-*/
-			HIDKey[2] = 0x2d;
-		}else if(keyCode == 0x2e){/*,*/
-			HIDKey[2] = 0x37;
-		}else if(keyCode == 0x2f){/*/*/
-			HIDKey[2] = 0x38;
-		}
-    }else if(keyCode <= 0x3f){
-		if(keyCode == 0x3a){/*:*/
-			HIDKey[2] = 0x33;
-			HIDKey[0]	|= 0x02;	                                                  //shift+
-		}else if(keyCode == 0x3b){/*;*/
-			HIDKey[2] = 0x33;
-		}else if(keyCode == 0x3c){/*<*/
-			HIDKey[2] = 0x36;
-			HIDKey[0]	|= 0x02;	                                                  //shift+
-		}else if(keyCode == 0x3d){/*=*/
-			HIDKey[2] = 0x2e;
-		}else if(keyCode == 0x3e){/*>*/
-			HIDKey[2] = 0x37;
-			HIDKey[0]	|= 0x02;	                                                  //shift+
-		}else if(keyCode == 0x3f){/*?*/
-			HIDKey[2] = 0x38;
-			HIDKey[0]	|= 0x02;	                                                  //shift+
-		}
-    }else if(keyCode == 0x40){/*@*/
-        HIDKey[2] = 0x1f;
-        HIDKey[0]	= 0x02;	                                                  //shift+
-    }else if((keyCode >= 0x5b)&&(keyCode <= 0x60)){
-		if(keyCode == 0x5b){/*[*/
-			HIDKey[2] = 0x2f;
-		}else if(keyCode == 0x5c){/*\*/
-			HIDKey[2] = 0x31;
-		}else if(keyCode == 0x5d){/*:*/
-			HIDKey[2] = 0x30;
-		}else if(keyCode == 0x5e){/*:*/
-			HIDKey[2] = 0x23;
-			HIDKey[0]	= 0x02;	                                                  //shift+
-		}else if(keyCode == 0x5f){/*:*/
-			HIDKey[2] = 0x2d;
-			HIDKey[0]	= 0x02;	                                                  //shift+
-		}else if(keyCode == 0x60){/*`*/
-			HIDKey[2] = 0x35;
-		}
-	}else if((keyCode >= 0x7b)&&(keyCode <= 0x7f)){
-		if(keyCode == 0x7b){/*{*/
-			HIDKey[2] = 0x2f;
-			HIDKey[0]	= 0x02;	                                                  //shift+
-		}
-		else if(keyCode == 0x7c){/*|*/
-			HIDKey[2] = 0x31;
-			HIDKey[0]	= 0x02;	                                                  //shift+
-		}
-		else if(keyCode == 0x7d){/*}*/
-			HIDKey[2] = 0x30;
-			HIDKey[0]	= 0x02;	                                                  //shift+
-		}
-		else if(keyCode == 0x7e){/*~*/
-			HIDKey[2] = 0x35;
-			HIDKey[0]	= 0x02;	                                                  //shift+
-		}
-		else if(keyCode == 0x7f){/*{*/
-			HIDKey[2] = 0x4c;
-		}
-	}else if((keyCode >= 0x80)&&(keyCode <= 0x87)){/*left ctl*/
-        keyCode &= 0x0f;
-        HIDKey[0]	= (1<<keyCode);	                                          //
-    }else if((keyCode >= 0xd7)&&(keyCode <= 0xda)){/**/
-        keyCode -= 0x88;
-        HIDKey[2]	= keyCode;
-    }else if((keyCode >= 0xb0)&&(keyCode <= 0xb3)){/**/
-        keyCode -= 0x88;
-        HIDKey[2]	= keyCode;
-    }else if((keyCode >= 0xd1)&&(keyCode <= 0xd5)){/**/
-        keyCode -= 0x88;
-        HIDKey[2]	= keyCode;
-    }else if((keyCode >= 0xC1)&&(keyCode <= 0xCD)){/**/
-        keyCode -= 0x88;
-        HIDKey[2]	= keyCode;
-    }
-}
-
 /*******************************************************************************
 * Function Name  : usb_clear_flag()
 * Description    : 清除USB设备状态
@@ -593,67 +442,6 @@ void usb_clear_flag(void)
 	LED_VALID = 1;                                                        //给一个默认值
 }
 
-/*******************************************************************************
-* Function Name  : __hid_value_handle()
-* Description    : HID数据上报函数(运行函数)
-* Input          : None
-* Output         : None
-* Return         : None
-*******************************************************************************/
-void __hid_value_handle(void)
-{
-    if (data_buf[send_point] == KC_LEFT_SHIFT) {
-        HIDKey[0] = 0x02;	
-        send_point++;
-	    if(send_point>=BUFMAX) send_point=0;
-        return;
-    }else {
-        _key_code_correspond(data_buf[send_point]);
-    }
-
-	send_point++;
-	if(send_point>=BUFMAX) send_point=0;
-
-	FLAG = 0;
-	enp1_in_evt();
-	while(FLAG == 0);
-	FLAG = 0;
-	memset(&HIDKey[0],0,8);
-	enp1_in_evt();
-	while(FLAG == 0);
-}
-
-/*******************************************************************************
-* Function Name  : hid_value_handle_proc()
-* Description    : HID数据上报函数(运行函数)
-* Input          : None
-* Output         : None
-* Return         : None
-*******************************************************************************/
-void hid_value_handle_proc(void)
-{
-    if(Ready&&(data_len>0)){
-        __hid_value_handle();
-        data_len--;
-
-    }else{
-        return;
-    }
-}
-
-/*******************************************************************************
-* Function Name  : get_keyboard_data()
-* Description    : 获取键盘数据,并存入data_buf(通过hid_value_handle上报)
-* Input          : None
-* Output         : None
-* Return         : None
-*******************************************************************************/
-void get_keyboard_data(uint8_t in_data)
-{
-    data_buf[recv_point++] = in_data;
-    data_len++;
-    if(recv_point>=BUFMAX) recv_point = 0;
-}
 
 
 void keycode_input(key_code_enum keycode[], uint8_t keycode_len)

@@ -2,7 +2,6 @@
 /.eide
 /.vscode
 .eide.usr.ctx.json
-*-workspace
 /build/Target*/*
 
 # 保留hex文件
