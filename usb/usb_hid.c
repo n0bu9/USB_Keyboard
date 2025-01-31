@@ -2,8 +2,8 @@
 #include "main.h"
 #include "string.h"
 
-#define THIS_ENDP0_SIZE         DEFAULT_ENDP0_SIZE
-#define BUFMAX 8
+#define THIS_ENDP0_SIZE         ((unsigned char)DEFAULT_ENDP0_SIZE)
+#define THIS_ENDP1_SIZE         32UL
 #pragma  NOAREGS
 
 static uint8_t xdata Ep0Buffer[8>(THIS_ENDP0_SIZE+2)?8:(THIS_ENDP0_SIZE+2)] _at_ 0x0000;    //端点0 OUT&IN缓冲区，必须是偶地址
@@ -13,7 +13,7 @@ uint8_t hid_report_descriptor[] = {
     0x05, 0x01,        // Usage Page (Generic Desktop Ctrls)
     0x09, 0x06,        // Usage (Keyboard)
     0xA1, 0x01,        // Collection (Application)
-    //0x85, 0x01,        // Report ID (1)
+    0x85, 0x01,        // Report ID (1)
     0x05, 0x07,        //   Usage Page (Kbrd/Keypad)
     0x19, 0xE0,        //   Usage Minimum (0xE0)
     0x29, 0xE7,        //   Usage Maximum (0xE7)
@@ -51,7 +51,7 @@ uint8_t device_descriptor[18] = {
     0x00, // 设备类代码(bDeviceClass)
     0x00, // 设备子类代码(bDeviceSubClass)
     0x00, // 设备协议代码(bDeviceProtocol)
-    DEFAULT_ENDP0_SIZE, // 端点0的最大包大小(bMaxPacketSize0)
+    THIS_ENDP0_SIZE, // 端点0的最大包大小(bMaxPacketSize0)
     0x3d,0x41, // 厂商编号(idVendor)
     0x07,0x21, // 产品编号(idProduct)
     0x00,0x00, // 设备出厂编号(bcdDevice)
@@ -94,13 +94,13 @@ uint8_t config_descriptor[34] = {
     0x05, // 端点描述符的类型(bDescriptorType)
     0x81, // USB设备的端点地址(bEndpointAddress)
     0x03, // 端点方向(bmAttributes)
-    DEFAULT_ENDP0_SIZE,0x00, // 本端点接收或发送的最大信息包大小(wMaxPacketSize)
+    THIS_ENDP1_SIZE,0x00, // 本端点接收或发送的最大信息包大小(wMaxPacketSize)
     0x01, // 端点间隔时间(bInterval)
 };
 
 /*键盘数据*/
-static uint8_t HIDKey[8] = {0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0};
-static uint8_t HIDKey_last[8] = {0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0};
+static uint8_t HIDKey[9] = {0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0};
+static uint8_t HIDKey_last[9] = {0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0};
 static uint8_t SetupReq = 0,SetupLen = 0,Ready = 0,Count = 0,FLAG = 0,UsbConfig = 0;
 static uint8_t LED_VALID = 0;
 static uint8_t *pDescr; // USB配置标志
@@ -447,10 +447,11 @@ void usb_clear_flag(void)
 void keycode_input(key_code_enum keycode[], uint8_t keycode_len)
 {
     uint8_t i = 0;
-    uint8_t j = 2;  // 根据HID报文--从HIDKey[2]开始存储
+    uint8_t j = 3;  // 根据HID报文--从HIDKey[2]开始存储
+    HIDKey[0] = 0x01;
     for (i = 0; i < keycode_len; i++) {
         if (keycode[i] >= KC_LEFT_CTRL && keycode[i] <= KC_RIGHT_GUI) {
-            HIDKey[0] |= 1 << (keycode[i] - KC_LEFT_CTRL);
+            HIDKey[1] |= 1 << (keycode[i] - KC_LEFT_CTRL);
         }else {
             HIDKey[j] = keycode[i];
             j++;
@@ -460,25 +461,23 @@ void keycode_input(key_code_enum keycode[], uint8_t keycode_len)
         }
     }
 
-    if (memcmp(HIDKey, HIDKey_last, sizeof(HIDKey)) != 0) {  // 如果HIDKey与HIDKey_last不相等，则重新发送
+    if (memcmp(HIDKey, HIDKey_last, sizeof(HIDKey)) != 0) {  // 如果HIDKey与HIDKey_last不相等，则更新
         FLAG = 0;
 	    enp1_in_evt();
 	    while(FLAG == 0);
 	    FLAG = 0;
+        memcpy(HIDKey_last, HIDKey, sizeof(HIDKey));
     }
-    memcpy(HIDKey_last, HIDKey, sizeof(HIDKey));
-    memset(&HIDKey[0],0,8);
-    if (i < keycode_len) {
-        keycode_input(keycode + i, keycode_len - i);
-    }
+    memset(&HIDKey[0], 0, sizeof(HIDKey));
 }
 
 void keycode_input_none(void)
 {
+    HIDKey[0] = 0x01;
     FLAG = 0;
 	enp1_in_evt();
 	while(FLAG == 0);
 	FLAG = 0;
-    memset(&HIDKey_last[0],0,8);
+    memset(&HIDKey_last[0],0,sizeof(HIDKey));
 }
 
