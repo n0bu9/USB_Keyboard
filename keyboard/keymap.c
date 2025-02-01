@@ -6,6 +6,7 @@
 #define _FL_ 1
 #define _________ KC_NONE
 
+/* 用户定义的键盘映射表 */
 const uint16_t keymaps[][MATRIX_ROWS][MATRIX_COLS] = {  
             {
                 {KC_NUM_LOCK_CLEAR, KC_P_SLASH,      KC_P_ASTERISK,      KC_P_MINUS}, // LSB ---> MSB
@@ -16,26 +17,25 @@ const uint16_t keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
             }
 };
 
+/*  ******************************************************************************
+* Function Name  : report_key_by_map()
+* Description    : 通过映射表上报键盘码
+* Input          : cooked_key_state:逻辑键盘状态
+* Output         : None
+* Return         : None
+*******************************************************************************/
 void report_key_by_map(matrix_row_t *cooked_key_state) 
 {
     uint8_t i = 0;
     uint8_t j = 0;
-    uint8_t keycode_len = 0;
-    key_code_enum keycode[17];  // 17键键盘，最多发送17个keycode（太耗内存、后期必改）
     for (i = 0; i < MATRIX_ROWS; i++) {
         if (cooked_key_state[i] != 0) {
             for (j = 0; j < MATRIX_COLS; j++) {
                 if (cooked_key_state[i] & (1 << j)) {
-                    keycode[keycode_len] = keymaps[0][i][j];
-                    keycode_len++;
+                    keycode_fill_report(keymaps[0][i][j]);
                 }
             }
         }
-    }
-    if (keycode_len > 0) {  // 如果keycode_len大于0，则发送keycode
-        keycode_input(keycode, keycode_len);
-    }else {  // 如果keycode_len等于0，则发送KC_NONE
-        keycode_input_none();
     }
 }
 

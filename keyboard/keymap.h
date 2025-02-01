@@ -110,48 +110,48 @@ typedef enum {
     KC_APPLICATION, // application
     KC_POWER, // power
     KC_P_EQUAL, // pad =
-    KC_F13, // f13
-    KC_F14, // f14
-    KC_F15, // f15
-    KC_F16, // f16
-    KC_F17, // f17
-    KC_F18, // f18
-    KC_F19, // f19
-    KC_F20, // f20
-    KC_F21, // f21
-    KC_F22, // f22
-    KC_F23, // f23
-    KC_F24, // f24
-    KC_EXECUTE, // execute
-    KC_HELP, // help
-    KC_MENU, // menu
-    KC_SELECT, // select
-    KC_STOP, // stop
-    KC_AGAIN, // again
-    KC_UNDO, // undo
-    KC_CUT, // cut
-    KC_COPY, // copy
-    KC_PASTE, // paste
-    KC_FIND, // find
-    KC_MUTE, // mute
-    KC_VOLUME_UP, // volume up
-    KC_VOLUME_DOWN, // volume down
-    KC_LOCK_CAPS_LOCK, // caps lock 
-    KC_LOCK_NUM_LOCK, // num lock
-    KC_LOCK_SCROLL_LOCK, // scroll lock
-    KC_P_COMMA, // pad ,
-    KC_P_EQUAL_SIGN, // pad =
-    KC_INTERNATIONAL_1,
-    KC_INTERNATIONAL_2,
-    KC_INTERNATIONAL_3,
-    KC_INTERNATIONAL_4,
-    KC_INTERNATIONAL_5,
-    KC_INTERNATIONAL_6,
-    KC_INTERNATIONAL_7,
-    KC_INTERNATIONAL_8,
-    KC_INTERNATIONAL_9,
-    KC_LONG1,
-    KC_LONG2,
+    // KC_F13, // f13
+    // KC_F14, // f14
+    // KC_F15, // f15
+    // KC_F16, // f16
+    // KC_F17, // f17
+    // KC_F18, // f18
+    // KC_F19, // f19
+    // KC_F20, // f20
+    // KC_F21, // f21
+    // KC_F22, // f22
+    // KC_F23, // f23
+    // KC_F24, // f24
+    // KC_EXECUTE, // execute
+    // KC_HELP, // help
+    // KC_MENU, // menu
+    // KC_SELECT, // select
+    // KC_STOP, // stop
+    // KC_AGAIN, // again
+    // KC_UNDO, // undo
+    // KC_CUT, // cut
+    // KC_COPY, // copy
+    // KC_PASTE, // paste
+    // KC_FIND, // find
+    // KC_MUTE, // mute
+    // KC_VOLUME_UP, // volume up
+    // KC_VOLUME_DOWN, // volume down
+    // KC_LOCK_CAPS_LOCK, // caps lock 
+    // KC_LOCK_NUM_LOCK, // num lock
+    // KC_LOCK_SCROLL_LOCK, // scroll lock
+    // KC_P_COMMA, // pad ,
+    // KC_P_EQUAL_SIGN, // pad =
+    // KC_INTERNATIONAL_1,
+    // KC_INTERNATIONAL_2,
+    // KC_INTERNATIONAL_3,
+    // KC_INTERNATIONAL_4,
+    // KC_INTERNATIONAL_5,
+    // KC_INTERNATIONAL_6,
+    // KC_INTERNATIONAL_7,
+    // KC_INTERNATIONAL_8,
+    // KC_INTERNATIONAL_9,
+    // KC_LONG1,
+    // KC_LONG2,
 
     KC_LEFT_CTRL = 0xE0,  // left ctrl
     KC_LEFT_SHIFT = 0xE1, // left shift

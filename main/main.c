@@ -14,9 +14,6 @@
 
 #pragma  NOAREGS
 
-extern volatile matrix_row_t raw_key_state[MATRIX_ROWS];
-extern volatile matrix_row_t cooked_key_state[MATRIX_ROWS];
-
 void led_flash_proc(void)
 {
     static uint16_t time = 0;
@@ -72,7 +69,10 @@ void keyboard_proc(void)
         if (changed) uart_send_string(0, "True\r\n");
     #endif
     cooked_changed = sym_defer_get_debounce(raw_key_state, cooked_key_state, MATRIX_ROWS, changed);
-    if (cooked_changed) report_key_by_map(cooked_key_state);
+    if (cooked_changed) {
+        report_key_by_map(cooked_key_state);
+        keycode_input_proc();
+    }
 }
 
 

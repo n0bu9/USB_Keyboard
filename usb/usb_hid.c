@@ -10,11 +10,12 @@ static uint8_t xdata Ep0Buffer[8>(THIS_ENDP0_SIZE+2)?8:(THIS_ENDP0_SIZE+2)] _at_
 static uint8_t xdata Ep1Buffer[64>(MAX_PACKET_SIZE+2)?64:(MAX_PACKET_SIZE+2)] _at_ 0x000a;  //端点1 OUT&IN缓冲区，必须是偶地址
 
 uint8_t hid_report_descriptor[] = {
-    0x05, 0x01,        // Usage Page (Generic Desktop Ctrls)
+    /* 键盘-6键无冲突 */
+    0x05, 0x01,        // Usage Page (Generic Desktop)
     0x09, 0x06,        // Usage (Keyboard)
     0xA1, 0x01,        // Collection (Application)
-    0x85, 0x01,        // Report ID (1)
-    0x05, 0x07,        //   Usage Page (Kbrd/Keypad)
+    0x85, 0x01,        //   Report ID (1)
+    0x05, 0x07,        //   Usage Page (Keyboard)
     0x19, 0xE0,        //   Usage Minimum (0xE0)
     0x29, 0xE7,        //   Usage Maximum (0xE7)
     0x15, 0x00,        //   Logical Minimum (0)
@@ -38,10 +39,28 @@ uint8_t hid_report_descriptor[] = {
     0x75, 0x08,        //   Report Size (8)
     0x26, 0xFF, 0x00,  //   Logical Maximum (255)
     0x05, 0x07,        //   Usage Page (Kbrd/Keypad)
-    0x19, 0x00,        //   Usage Minimum (0x00)
-    0x29, 0x91,        //   Usage Maximum (0x91)
+    0x19, 0x00,        //   Usage Minimum (0)
+    0x29, 0x91,        //   Usage Maximum (91)
     0x81, 0x00,        //   Input (Data,Array,Abs,No Wrap,Linear,Preferred State,No Null Position)
-    0xC0               // End Collection
+    0xC0,              // End Collection
+
+    /* 键盘-扩展全键无冲 */
+    0x05, 0x01,                    // USAGE_PAGE (Generic Desktop)
+    0x09, 0x06,                    // USAGE (Keyboard)
+    0xa1, 0x01,                    // COLLECTION (Application)
+    0x85, 0x02,                    //   REPORT_ID (2)
+    0x05, 0x07,                    //   USAGE_PAGE (Keyboard)
+    0x19, 0x04,                    //   USAGE_MINIMUM (Keyboard a and A)
+    0x29, 0x67,                    //   USAGE_MAXIMUM (Keypad =)
+    0x15, 0x00,                    //   LOGICAL_MINIMUM (0)
+    0x25, 0x01,                    //   LOGICAL_MAXIMUM (1)
+    0x75, 0x01,                    //   REPORT_SIZE (1)
+    0x95, 0x63,                    //   REPORT_COUNT (99)
+    0x81, 0x02,                    //   INPUT (Data,Var,Abs)
+    0x75, 0x01,                    //   REPORT_SIZE (1)
+    0x95, 0x05,                    //   REPORT_COUNT (5)
+    0x81, 0x03,                    //   INPUT (Cnst,Var,Abs)
+    0xc0                           // END_COLLECTION
 };
 
 uint8_t device_descriptor[18] = {
@@ -99,13 +118,15 @@ uint8_t config_descriptor[34] = {
 };
 
 /*键盘数据*/
-static uint8_t HIDKey[9] = {0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0};
+static uint8_t HIDKey[9] = {0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0};  // 1B-ReportID, 8B-KeyCode
 static uint8_t HIDKey_last[9] = {0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0};
+static uint8_t HIDKey_extend[14] = {0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0}; // 1B-ReportID, 13B-KeyCode
+static uint8_t HIDKey_extend_last[14] = {0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0};
+static uint8_t hid_key_index = 3;  // 从第3个开始
 static uint8_t SetupReq = 0,SetupLen = 0,Ready = 0,Count = 0,FLAG = 0,UsbConfig = 0;
 static uint8_t LED_VALID = 0;
 static uint8_t *pDescr; // USB配置标志
-static USB_SETUP_REQ   SetupReqBuf; // 暂存Setup包
-
+//static USB_SETUP_REQ   SetupReqBuf; // 暂存Setup包
 
 #define UsbSetupBuf     ((PUSB_SETUP_REQ)Ep0Buffer)
 /*******************************************************************************
@@ -137,14 +158,15 @@ void usb_device_init(void)
 /*******************************************************************************
 * Function Name  : enp1_in_evt()
 * Description    : USB设备模式端点1的中断上传
-* Input          : None
+* Input          : data[]: 数据
+*                  len: 数据长度
 * Output         : None
 * Return         : None
 *******************************************************************************/
-void enp1_in_evt(void)
+void enp1_in_evt(uint8_t usb_data[], uint8_t len)
 {
-    memcpy(Ep1Buffer, HIDKey, sizeof(HIDKey));                              //加载上传数据
-    UEP1_T_LEN = sizeof(HIDKey);                                             //上传数据长度
+    memcpy(Ep1Buffer, usb_data, len);                                            //加载上传数据
+    UEP1_T_LEN = len;                                                        //上传数据长度
     UEP1_CTRL = UEP1_CTRL & ~ MASK_UEP_T_RES | UEP_T_RES_ACK;                //有数据时上传数据并应答ACK
 }
 
@@ -441,43 +463,103 @@ void usb_clear_flag(void)
     Ready = 0;
 	LED_VALID = 1;                                                        //给一个默认值
 }
-
-
-
-void keycode_input(key_code_enum keycode[], uint8_t keycode_len)
+/*******************************************************************************
+* Function Name  : __keycode_fill_report()
+* Description    : 填充基本HID键盘报文(内部调用)
+* Input          : keycode:键盘键码
+* Output         : None
+* Return         : None
+*******************************************************************************/
+bool __keycode_fill_report(key_code_enum keycode)
 {
-    uint8_t i = 0;
-    uint8_t j = 3;  // 根据HID报文--从HIDKey[2]开始存储
     HIDKey[0] = 0x01;
-    for (i = 0; i < keycode_len; i++) {
-        if (keycode[i] >= KC_LEFT_CTRL && keycode[i] <= KC_RIGHT_GUI) {
-            HIDKey[1] |= 1 << (keycode[i] - KC_LEFT_CTRL);
-        }else {
-            HIDKey[j] = keycode[i];
-            j++;
-        }
-        if (j > 8) {
-            break;
-        }
-    }
 
-    if (memcmp(HIDKey, HIDKey_last, sizeof(HIDKey)) != 0) {  // 如果HIDKey与HIDKey_last不相等，则更新
-        FLAG = 0;
-	    enp1_in_evt();
-	    while(FLAG == 0);
-	    FLAG = 0;
-        memcpy(HIDKey_last, HIDKey, sizeof(HIDKey));
+    if (keycode >= KC_LEFT_CTRL && keycode <= KC_RIGHT_GUI) {
+        HIDKey[1] |= 1 << (keycode - KC_LEFT_CTRL);
+        return TRUE;
     }
-    memset(&HIDKey[0], 0, sizeof(HIDKey));
+    if (hid_key_index > 8) {  // 最多6个键，当超出6个键时，启用全键无冲扩展
+        return FALSE;
+    }
+    HIDKey[hid_key_index] = keycode;
+    hid_key_index++;
+
+    return TRUE;
 }
-
-void keycode_input_none(void)
+/*******************************************************************************
+* Function Name  : __keycode_clear_report()
+* Description    : 清除基本HID键盘报文(内部调用)
+* Input          : None
+* Output         : None
+* Return         : None
+*******************************************************************************/
+void __keycode_clear_report(void)
 {
-    HIDKey[0] = 0x01;
-    FLAG = 0;
-	enp1_in_evt();
-	while(FLAG == 0);
-	FLAG = 0;
-    memset(&HIDKey_last[0],0,sizeof(HIDKey));
+    memcpy(HIDKey_last, HIDKey, sizeof(HIDKey));  // 当前状态置为上一次状态
+    memset(HIDKey, 0, sizeof(HIDKey));            // 清空当前状态
+    HIDKey[0] = 0x01;                             // report ID
+    hid_key_index = 3;                            // 重置键位索引
+}
+/*******************************************************************************
+* Function Name  : __keycode_fill_report_extend()
+* Description    : 填充全键无冲扩展键盘报文(内部调用)
+* Input          : keycode:键盘键码
+* Output         : None
+* Return         : None
+*******************************************************************************/
+void __keycode_fill_report_extend(key_code_enum keycode)
+{
+    HIDKey_extend[0] = 0x02;  // report ID
+    keycode = keycode - KC_a_A;
+    if (keycode <= 7) {
+        HIDKey_extend[1] |= 1 << keycode;
+    } else {
+        HIDKey_extend[1 + keycode / 8] |= 1 << (keycode % 8);
+    }
+}
+/*******************************************************************************
+* Function Name  : __keycode_clear_report_extend()
+* Description    : 清除全键无冲扩展键盘报文(内部调用)
+* Input          : None
+* Output         : None
+* Return         : None
+*******************************************************************************/
+void __keycode_clear_report_extend(void)
+{
+    memcpy(HIDKey_extend_last, HIDKey_extend, sizeof(HIDKey_extend));  // 当前状态置为上一次状态
+    memset(HIDKey_extend, 0, sizeof(HIDKey_extend));                   // 清空当前状态
+    HIDKey_extend[0] = 0x02;                                           // report ID
+}
+/*******************************************************************************
+* Function Name  : keycode_fill_report()
+* Description    : 填充HID键盘报文(外部调用)
+* Input          : keycode:键盘键码
+* Output         : None
+* Return         : None
+*******************************************************************************/
+void keycode_fill_report(key_code_enum keycode)
+{
+    bool ret = __keycode_fill_report(keycode);
+    if (!ret) {
+        __keycode_fill_report_extend(keycode);
+    }
+}
+/*******************************************************************************
+* Function Name  : keycode_input_proc()
+* Description    : 键盘HID报文上报
+* Input          : None
+* Output         : None
+* Return         : None
+*******************************************************************************/
+void keycode_input_proc(void)
+{
+    if (memcmp(HIDKey, HIDKey_last, sizeof(HIDKey)) != 0) {
+        ENP1_IN_EVT(HIDKey, sizeof(HIDKey));
+    }
+    if (memcmp(HIDKey_extend, HIDKey_extend_last, sizeof(HIDKey_extend)) != 0) {
+        ENP1_IN_EVT(HIDKey_extend, sizeof(HIDKey_extend));
+    }
+    __keycode_clear_report();
+    __keycode_clear_report_extend();
 }
 

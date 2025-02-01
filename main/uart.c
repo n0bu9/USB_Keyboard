@@ -31,6 +31,14 @@ void uart_send_string(uint8_t uart_x, const int8_t *str)
     }
 }
 
+/*  ******************************************************************************
+* Function Name  : uart_send_byte(uint8_t uart_x, uint8_t byte)
+* Description    : 发送字节
+* Input          : uart_x: 0: uart0, 1: uart1
+*                  byte: 字节
+* Output         : None
+* Return         : None
+*******************************************************************************/
 void uart_send_byte(uint8_t uart_x, uint8_t byte)
 {
     if(uart_x == 0)
@@ -48,6 +56,13 @@ void uart_send_byte(uint8_t uart_x, uint8_t byte)
 }
 
 #if defined(DEBUG_UART_ISR)
+/*  ******************************************************************************
+* Function Name  : query_uart0_interrupt(void)
+* Description    : UART0中断服务程序
+* Input          : None
+* Output         : None
+* Return         : None
+*******************************************************************************/
 void query_uart0_interrupt(void) interrupt INT_NO_UART0 using 2             //UART0中断服务程序,使用寄存器组2
 {
     uint8_t rec;

@@ -8,14 +8,17 @@
 // #pragma  NOAREGS
 
 /* 软件矩阵 */
-volatile matrix_row_t raw_key_state[MATRIX_ROWS];
-volatile matrix_row_t last_raw_key_state[MATRIX_ROWS];
-volatile matrix_row_t cooked_key_state[MATRIX_ROWS];
+volatile matrix_row_t raw_key_state[MATRIX_ROWS];      // 未消抖矩阵
+volatile matrix_row_t last_raw_key_state[MATRIX_ROWS]; // 上一次未消抖矩阵
+volatile matrix_row_t cooked_key_state[MATRIX_ROWS];   // 已消抖矩阵
 
-/*
- * @brief 初始化键盘硬件
- * @return 无
- */
+/*  ******************************************************************************
+* Function Name  : keyboard_init(void)
+* Description    : 初始化键盘硬件
+* Input          : None
+* Output         : None
+* Return         : None
+*******************************************************************************/
 void keyboard_init(void)
 {
     // Initialize the keyboard
@@ -53,10 +56,13 @@ void keyboard_init(void)
                                               ------->  ROWS5    0             .    ENTER
 */
 
-/*
- * @brief 扫描第一行
- * @return 无
- */
+/*  ******************************************************************************
+* Function Name  : __keyboard_scan_line0(void)
+* Description    : 扫描第一行
+* Input          : None
+* Output         : None
+* Return         : None
+*******************************************************************************/
 void __keyboard_scan_line0(void)
 {
     // 扫描第一行
@@ -92,6 +98,13 @@ void __keyboard_scan_line0(void)
     gpio_digital_write(ROWS_1, 1);
 }
 
+/*  ******************************************************************************
+* Function Name  : __keyboard_scan_line1(void)
+* Description    : 扫描第二行
+* Input          : None
+* Output         : None
+* Return         : None
+*******************************************************************************/
 void __keyboard_scan_line1(void)
 {
     // 扫描第二行
@@ -127,6 +140,13 @@ void __keyboard_scan_line1(void)
     gpio_digital_write(ROWS_2, 1);
 }
 
+/*  ******************************************************************************
+* Function Name  : __keyboard_scan_line2(void)
+* Description    : 扫描第三行
+* Input          : None
+* Output         : None
+* Return         : None
+*******************************************************************************/
 void __keyboard_scan_line2(void)
 {
     // 扫描第三行
@@ -162,6 +182,13 @@ void __keyboard_scan_line2(void)
     gpio_digital_write(ROWS_3, 1);
 }
 
+/*  ******************************************************************************
+* Function Name  : __keyboard_scan_line3(void)
+* Description    : 扫描第四行
+* Input          : None
+* Output         : None
+* Return         : None
+*******************************************************************************/
 void __keyboard_scan_line3(void)
 {
     // 扫描第四行
@@ -182,11 +209,13 @@ void __keyboard_scan_line3(void)
     gpio_digital_write(ROWS_4, 1);
 }
 
-/*
- * @brief 扫描键盘的某一行
- * @param line: 行号
- * @return 无
- */
+/*  ******************************************************************************
+* Function Name  : keyboard_scan_line(uint8_t line)
+* Description    : 扫描键盘的某一行
+* Input          : line: 行号
+* Output         : None
+* Return         : None
+*******************************************************************************/
 void keyboard_scan_line(uint8_t line)
 {
     memcpy(last_raw_key_state, raw_key_state, sizeof(matrix_row_t)*MATRIX_ROWS);
@@ -209,10 +238,13 @@ void keyboard_scan_line(uint8_t line)
     }
 }
 
-/*
- * @brief 扫描键盘的全部行
- * @return 无
- */
+/*  ******************************************************************************
+* Function Name  : keyboard_scan_all(void)
+* Description    : 扫描键盘的全部行
+* Input          : None
+* Output         : None
+* Return         : None
+*******************************************************************************/
 void keyboard_scan_all(void)
 {
     memcpy(last_raw_key_state, raw_key_state, sizeof(matrix_row_t)*MATRIX_ROWS);
@@ -222,69 +254,39 @@ void keyboard_scan_all(void)
     __keyboard_scan_line3();
 }
 
+/*  ******************************************************************************
+* Function Name  : if_state_changed(void)
+* Description    : 判断状态是否改变
+* Input          : None
+* Output         : None
+* Return         : None
+*******************************************************************************/
 bool if_state_changed(void)
 {
     return memcmp(last_raw_key_state, raw_key_state, sizeof(matrix_row_t)*MATRIX_ROWS);
 }
 
-/*
- * @brief 获取当前状态的数组地址
- * @return 无
- */
+/*  ******************************************************************************
+* Function Name  : get_raw_key_state_ptr(void)
+* Description    : 获取未消抖矩阵的地址
+* Input          : None
+* Output         : None
+* Return         : None
+*******************************************************************************/
 matrix_row_t *get_raw_key_state_ptr(void)
 {
     return raw_key_state;
 }
 
-/*
- * @brief 获取上一个状态的数组地址
- * @return 无
- */
+/*  ******************************************************************************
+* Function Name  : get_cooked_key_state_ptr(void)
+* Description    : 获取已消抖矩阵的地址
+* Input          : None
+* Output         : None
+* Return         : None
+*******************************************************************************/
 matrix_row_t *get_cooked_key_state_ptr(void)
 {
     return cooked_key_state;
 }
-
-// /*
-//  * @brief 将当前第X状态移动到上一个状态
-//  * @param line: 行号
-//  * @return 无
-//  */
-// void move_state_to_last_line(uint8_t line)
-// {
-//     if (line < MATRIX_ROWS) {
-//         memcpy(last_key_state[line], real_key_state[line], sizeof(matrix_row_t));
-//     }
-// }
-
-// /*
-//  * @brief 将当前状态移动到上一个状态
-//  * @return 无
-//  */
-// void move_state_to_last_all(void)
-// {
-//     memcpy(last_key_state, real_key_state, sizeof(matrix_row_t)*MATRIX_ROWS);
-// }
-
-// /*
-//  * @brief 比较当前第X行状态和上一个状态
-//  * @param line: 行号
-//  * @return 无
-//  */
-// bool compare_state_line(uint8_t line)
-// {
-//     if (line < MATRIX_ROWS) {
-//         return memcmp(last_key_state[line], real_key_state[line], sizeof(matrix_row_t));
-//     }
-//     return TRUE;
-// }
-
-// /*
-//  * @brief 比较当前状态和上一个状态
-//  * @return 无
-//  */
-// bool compare_state_all(void)
-// {
-//     return memcmp(last_key_state, real_key_state, sizeof(matrix_row_t)*MATRIX_ROWS);
-// }
 
