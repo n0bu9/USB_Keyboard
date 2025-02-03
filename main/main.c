@@ -91,8 +91,9 @@ void main( )
     wdt_mode_select(1);                                                        //看门狗作为复位
     keyboard_init();                                                           //键盘初始化
 	EA = 1;                                                                    //开启总中断
-
     mTimer0RunCTL(1);                                                          //启动定时器0
+
+    delay_ms(10);                                                              //延时10ms
     usb_clear_flag();                                                          //清除USB标志
     while(1){
         // led_flash_proc();

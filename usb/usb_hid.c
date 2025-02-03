@@ -2,12 +2,12 @@
 #include "main.h"
 #include "string.h"
 
-#define THIS_ENDP0_SIZE         ((unsigned char)DEFAULT_ENDP0_SIZE)
+#define THIS_ENDP0_SIZE         32UL
 #define THIS_ENDP1_SIZE         32UL
 #pragma  NOAREGS
 
 static uint8_t xdata Ep0Buffer[8>(THIS_ENDP0_SIZE+2)?8:(THIS_ENDP0_SIZE+2)] _at_ 0x0000;    //端点0 OUT&IN缓冲区，必须是偶地址
-static uint8_t xdata Ep1Buffer[64>(MAX_PACKET_SIZE+2)?64:(MAX_PACKET_SIZE+2)] _at_ 0x000a;  //端点1 OUT&IN缓冲区，必须是偶地址
+static uint8_t xdata Ep1Buffer[64>(MAX_PACKET_SIZE+2)?64:(MAX_PACKET_SIZE+2)] _at_ 0x00022;  //端点1 OUT&IN缓冲区，必须是偶地址
 
 uint8_t hid_report_descriptor[] = {
     /* 键盘-6键无冲突 */
@@ -60,7 +60,32 @@ uint8_t hid_report_descriptor[] = {
     0x75, 0x01,                    //   REPORT_SIZE (1)
     0x95, 0x05,                    //   REPORT_COUNT (5)
     0x81, 0x03,                    //   INPUT (Cnst,Var,Abs)
-    0xc0                           // END_COLLECTION
+    0xc0,                          // END_COLLECTION
+
+    /* 通信 */
+    0x06, 0x00, 0xff,              // USAGE_PAGE (Vendor Defined Page 1)
+    0x09, 0x01,                    // USAGE (Vendor Usage 1)
+    0xa1, 0x01,                    // COLLECTION (Application)
+    0x85, 0x03,                    //   REPORT_ID (3)
+    0x09, 0x02,                    //   USAGE (Vendor Usage 2)
+    0x15, 0x00,                    //   LOGICAL_MINIMUM (0)
+    0x26, 0xff, 0x00,              //   LOGICAL_MAXIMUM (255)
+    0x95, 0x0a,                    //   REPORT_COUNT (10)
+    0x75, 0x08,                    //   REPORT_SIZE (8)
+    0x81, 0x02,                    //   INPUT (Data,Var,Abs)
+    0xc0,                          // END_COLLECTION
+
+    // 0x06, 0x00, 0xff,              // USAGE_PAGE (Vendor Defined Page 1)
+    // 0x09, 0x02,                    // USAGE (Vendor Usage 2)
+    // 0xa1, 0x01,                    // COLLECTION (Application)
+    // 0x85, 0x04,                    //   REPORT_ID (4)
+    // 0x09, 0x02,                    //   USAGE (Vendor Usage 2)
+    // 0x15, 0x00,                    //   LOGICAL_MINIMUM (0)
+    // 0x26, 0xff, 0x00,              //   LOGICAL_MAXIMUM (255)
+    // 0x95, 0x0a,                    //   REPORT_COUNT (10)
+    // 0x75, 0x08,                    //   REPORT_SIZE (8)
+    // 0x81, 0x02,                    //   INPUT (Data,Var,Abs)
+    // 0xc0                           // END_COLLECTION
 };
 
 uint8_t device_descriptor[18] = {
@@ -107,7 +132,7 @@ uint8_t config_descriptor[34] = {
     0x00, // 国家代码(bCountryCode)
     0x01, // 类别描述符数目(至少有一个报表描述符)(bNumDescriptors)
     0x22, // 该类别描述符的类型(bDescriptorType)
-    sizeof(hid_report_descriptor),0x00, // 该类别描述符的总长度(wDescriptorLength)
+    LOW_BYTE(hid_report_descriptor),HIGH_BYTE(hid_report_descriptor), // 该类别描述符的总长度(wDescriptorLength)
     /* 端点描述符 7B */
     0x07, // 端点描述符的字节数大小(bLength)
     0x05, // 端点描述符的类型(bDescriptorType)
@@ -262,7 +287,7 @@ void device_interrupt(void) interrupt INT_NO_USB using 1                        
                         {
                             SetupLen = len;    //限制总长度
                         }
-                        len = SetupLen >= 8 ? 8 : SetupLen;                  //本次传输长度
+                        len = SetupLen >= THIS_ENDP0_SIZE ? THIS_ENDP0_SIZE : SetupLen;                  //本次传输长度
                         memcpy(Ep0Buffer, pDescr, len);                        //加载上传数据
                         SetupLen -= len;
                         pDescr += len;
@@ -382,7 +407,7 @@ void device_interrupt(void) interrupt INT_NO_USB using 1                        
                 SetupReq = 0xFF;
                 UEP0_CTRL = bUEP_R_TOG | bUEP_T_TOG | UEP_R_RES_STALL | UEP_T_RES_STALL;//STALL
             }
-            else if(len <= 8)                                                //上传数据或者状态阶段返回0长度包
+            else if(len <= THIS_ENDP0_SIZE)                                                //上传数据或者状态阶段返回0长度包
             {
                 UEP0_T_LEN = len;
                 UEP0_CTRL = bUEP_R_TOG | bUEP_T_TOG | UEP_R_RES_ACK | UEP_T_RES_ACK;//默认数据包是DATA1，返回应答ACK
@@ -397,12 +422,12 @@ void device_interrupt(void) interrupt INT_NO_USB using 1                        
             switch(SetupReq)
             {
             case USB_GET_DESCRIPTOR:
-                len = SetupLen >= 8 ? 8 : SetupLen;                          //本次传输长度
-                memcpy( Ep0Buffer, pDescr, len );                            //加载上传数据
+                len = SetupLen >= THIS_ENDP0_SIZE ? THIS_ENDP0_SIZE : SetupLen; //本次传输长度
+                memcpy( Ep0Buffer, pDescr, len );                               //加载上传数据
                 SetupLen -= len;
                 pDescr += len;
                 UEP0_T_LEN = len;
-                UEP0_CTRL ^= bUEP_T_TOG;                                     //同步标志位翻转
+                UEP0_CTRL ^= bUEP_T_TOG;                                        //同步标志位翻转
                 break;
             case USB_SET_ADDRESS:
                 USB_DEV_AD = USB_DEV_AD & bUDA_GP_BIT | SetupLen;
@@ -420,7 +445,7 @@ void device_interrupt(void) interrupt INT_NO_USB using 1                        
             {
               LED_VALID = Ep0Buffer[0];
             }
-            else if((SetupReq == 0x09) && (len == 8)){//SetReport
+            else if((SetupReq == 0x09) && (len == THIS_ENDP0_SIZE)){//SetReport
             }
             UEP0_T_LEN = 0;  //虽然尚未到状态阶段，但是提前预置上传0长度数据包以防主机提前进入状态阶段
             UEP0_CTRL = UEP_R_RES_ACK | UEP_T_RES_ACK;//默认数据包是DATA0,返回应答ACK
@@ -544,6 +569,12 @@ void keycode_fill_report(key_code_enum keycode)
         __keycode_fill_report_extend(keycode);
     }
 }
+
+void test_comm(void)
+{
+    uint8_t test_data[10] = {0x03, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09};
+    ENP1_IN_EVT(test_data, sizeof(test_data));
+}
 /*******************************************************************************
 * Function Name  : keycode_input_proc()
 * Description    : 键盘HID报文上报
@@ -561,5 +592,6 @@ void keycode_input_proc(void)
     }
     __keycode_clear_report();
     __keycode_clear_report_extend();
+    test_comm();
 }
 

@@ -11,6 +11,9 @@
                                         FLAG = 0;\
                                     } while (0);
 
+#define HIGH_BYTE(hid_report)   ((sizeof(hid_report)) >> 8  )
+#define LOW_BYTE(hid_report)    ((sizeof(hid_report)) & 0xFF)
+
 
 void usb_device_init(void);
 void usb_clear_flag(void);
