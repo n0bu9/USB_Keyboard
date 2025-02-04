@@ -5,10 +5,10 @@
 #include "keymap.h"
 
 #define ENP1_IN_EVT(usbdata, len)  do{\
-                                        FLAG = 0;\
+                                        edp0_idle = 0;\
                                         enp1_in_evt(usbdata, len);\
-                                        while(FLAG == 0);\
-                                        FLAG = 0;\
+                                        while(edp0_idle == 0);\
+                                        edp0_idle = 0;\
                                     } while (0);
 
 #define HIGH_BYTE(hid_report)   ((sizeof(hid_report)) >> 8  )

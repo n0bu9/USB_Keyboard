@@ -4,12 +4,14 @@
 
 #define THIS_ENDP0_SIZE         32UL
 #define THIS_ENDP1_SIZE         32UL
+#define THIS_ENDP2_SIZE         32UL
 #pragma  NOAREGS
 
 static uint8_t xdata Ep0Buffer[8>(THIS_ENDP0_SIZE+2)?8:(THIS_ENDP0_SIZE+2)] _at_ 0x0000;    //端点0 OUT&IN缓冲区，必须是偶地址
 static uint8_t xdata Ep1Buffer[64>(MAX_PACKET_SIZE+2)?64:(MAX_PACKET_SIZE+2)] _at_ 0x00022;  //端点1 OUT&IN缓冲区，必须是偶地址
+static uint8_t xdata Ep2Buffer[64>(MAX_PACKET_SIZE+2)?64:(MAX_PACKET_SIZE+2)] _at_ 0x00064;  //端点2 OUT&IN缓冲区，必须是偶地址
 
-uint8_t hid_report_descriptor[] = {
+uint8_t hid_report_descriptor_1[] = {
     /* 键盘-6键无冲突 */
     0x05, 0x01,        // Usage Page (Generic Desktop)
     0x09, 0x06,        // Usage (Keyboard)
@@ -74,18 +76,20 @@ uint8_t hid_report_descriptor[] = {
     0x75, 0x08,                    //   REPORT_SIZE (8)
     0x81, 0x02,                    //   INPUT (Data,Var,Abs)
     0xc0,                          // END_COLLECTION
+};
 
-    // 0x06, 0x00, 0xff,              // USAGE_PAGE (Vendor Defined Page 1)
-    // 0x09, 0x02,                    // USAGE (Vendor Usage 2)
-    // 0xa1, 0x01,                    // COLLECTION (Application)
-    // 0x85, 0x04,                    //   REPORT_ID (4)
-    // 0x09, 0x02,                    //   USAGE (Vendor Usage 2)
-    // 0x15, 0x00,                    //   LOGICAL_MINIMUM (0)
-    // 0x26, 0xff, 0x00,              //   LOGICAL_MAXIMUM (255)
-    // 0x95, 0x0a,                    //   REPORT_COUNT (10)
-    // 0x75, 0x08,                    //   REPORT_SIZE (8)
-    // 0x81, 0x02,                    //   INPUT (Data,Var,Abs)
-    // 0xc0                           // END_COLLECTION
+uint8_t hid_report_descriptor_2[] = {
+    0x06, 0x00, 0xff,              // USAGE_PAGE (Vendor Defined Page 1)
+    0x09, 0x02,                    // USAGE (Vendor Usage 2)
+    0xa1, 0x01,                    // COLLECTION (Application)
+    0x85, 0x04,                    //   REPORT_ID (4)
+    0x09, 0x02,                    //   USAGE (Vendor Usage 2)
+    0x15, 0x00,                    //   LOGICAL_MINIMUM (0)
+    0x26, 0xff, 0x00,              //   LOGICAL_MAXIMUM (255)
+    0x95, 0x0a,                    //   REPORT_COUNT (10)
+    0x75, 0x08,                    //   REPORT_SIZE (8)
+    0x81, 0x02,                    //   INPUT (Data,Var,Abs)
+    0xc0                           // END_COLLECTION
 };
 
 uint8_t device_descriptor[18] = {
@@ -105,7 +109,7 @@ uint8_t device_descriptor[18] = {
     0x01, // 配置数量(bNumConfigurations)
 };
 
-uint8_t config_descriptor[34] = {
+uint8_t config_descriptor[59] = {
     /* 配置描述符 9B */
     0x09, // 配置描述符的字节数大小(bLength)
     0x02, // 配置描述符的类型(bDescriptorType)
@@ -132,7 +136,7 @@ uint8_t config_descriptor[34] = {
     0x00, // 国家代码(bCountryCode)
     0x01, // 类别描述符数目(至少有一个报表描述符)(bNumDescriptors)
     0x22, // 该类别描述符的类型(bDescriptorType)
-    LOW_BYTE(hid_report_descriptor),HIGH_BYTE(hid_report_descriptor), // 该类别描述符的总长度(wDescriptorLength)
+    LOW_BYTE(hid_report_descriptor_1),HIGH_BYTE(hid_report_descriptor_1), // 该类别描述符的总长度(wDescriptorLength)
     /* 端点描述符 7B */
     0x07, // 端点描述符的字节数大小(bLength)
     0x05, // 端点描述符的类型(bDescriptorType)
@@ -140,6 +144,31 @@ uint8_t config_descriptor[34] = {
     0x03, // 端点方向(bmAttributes)
     THIS_ENDP1_SIZE,0x00, // 本端点接收或发送的最大信息包大小(wMaxPacketSize)
     0x01, // 端点间隔时间(bInterval)
+    /* 接口描述符 9B */
+    0x09, // 设备描述符的字节数大小(bLength)
+    0x04, // 接口描述符的类型(bDescriptorType)
+    0x00, // 接口编号(bInterfaceNumber)
+    0x00, // 描述符的索引值(bAlternateSetting)
+    0x01, // 该接口使用端点数(bNumEndpoints)
+    0x03, // 类型代码(bInterfaceClass)
+    0x00, // 子类代码(bInterfaceSubClass)
+    0x00, // 协议代码(bInterfaceProtocol)
+    0x00, // 字符串描述符的索引(iInterface)
+    /* HID描述符 9B */
+    0x09, // 设备描述符的字节数大小(bLength)
+    0x21, // HID描述符的类型(bDescriptorType)
+    0x11,0x01, // HID规范版本号(bcdHID,为1.11)
+    0x00, // 国家代码(bCountryCode)
+    0x01, // 类别描述符数目(至少有一个报表描述符)(bNumDescriptors)
+    0x22, // 该类别描述符的类型(bDescriptorType)
+    LOW_BYTE(hid_report_descriptor_2),HIGH_BYTE(hid_report_descriptor_2), // 该类别描述符的总长度(wDescriptorLength)
+    /* 端点描述符 7B */
+    0x07, // 端点描述符的字节数大小(bLength)
+    0x05, // 端点描述符的类型(bDescriptorType)
+    0x02, // USB设备的端点地址(bEndpointAddress)
+    0x03, // 端点方向(bmAttributes)
+    THIS_ENDP2_SIZE,0x00, // 本端点接收或发送的最大信息包大小(wMaxPacketSize)
+    0x0a, // 端点间隔时间(bInterval)
 };
 
 /*键盘数据*/
@@ -148,7 +177,7 @@ static uint8_t HIDKey_last[9] = {0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0};
 static uint8_t HIDKey_extend[14] = {0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0}; // 1B-ReportID, 13B-KeyCode
 static uint8_t HIDKey_extend_last[14] = {0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0};
 static uint8_t hid_key_index = 3;  // 从第3个开始
-static uint8_t SetupReq = 0,SetupLen = 0,Ready = 0,Count = 0,FLAG = 0,UsbConfig = 0;
+static uint8_t SetupReq = 0,SetupLen = 0,Ready = 0,Count = 0,edp0_idle = 0,UsbConfig = 0;
 static uint8_t LED_VALID = 0;
 static uint8_t *pDescr; // USB配置标志
 //static USB_SETUP_REQ   SetupReqBuf; // 暂存Setup包
@@ -215,7 +244,7 @@ void device_interrupt(void) interrupt INT_NO_USB using 1                        
             UEP1_T_LEN = 0;                                                     //预使用发送长度一定要清空
 //            UEP2_CTRL ^= bUEP_T_TOG;                                          //如果不设置自动翻转则需要手动翻转
             UEP1_CTRL = UEP1_CTRL & ~ MASK_UEP_T_RES | UEP_T_RES_NAK;           //默认应答NAK
-            FLAG = 1;                                                           /*传输完成标志*/
+            edp0_idle = 1;                                                           /*传输完成标志*/
             break;
         case UIS_TOKEN_SETUP | 0:                                                //SETUP事务
             len = USB_RX_LEN;
@@ -267,8 +296,8 @@ void device_interrupt(void) interrupt INT_NO_USB using 1                        
                         case 0x22:                                          //报表描述符
                             if(UsbSetupBuf->wIndexL == 0)                   //接口0报表描述符
                             {
-                                pDescr = hid_report_descriptor;                        //数据准备上传
-                                len = sizeof(hid_report_descriptor);
+                                pDescr = hid_report_descriptor_1;                        //数据准备上传
+                                len = sizeof(hid_report_descriptor_1);
                                 Ready = 1;                                  //如果有更多接口，该标准位应该在最后一个接口配置完成后有效
                                 #if defined(DEBUG_UART_ISR)
                                 ES = 1;                                     //开启串口中断
@@ -484,7 +513,7 @@ void device_interrupt(void) interrupt INT_NO_USB using 1                        
 void usb_clear_flag(void)
 {
     UEP1_T_LEN = 0;                                                       //预使用发送长度一定要清空
-    FLAG = 0;
+    edp0_idle = 0;
     Ready = 0;
 	LED_VALID = 1;                                                        //给一个默认值
 }
