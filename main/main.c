@@ -99,6 +99,7 @@ void main( )
         // led_flash_proc();
         // uart_debug_proc();
         keyboard_proc();
+        info_rec_test();
 
         wdt_feed();                                                           //喂狗
     }

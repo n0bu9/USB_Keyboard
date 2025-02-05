@@ -88,7 +88,7 @@ uint8_t hid_report_descriptor_2[] = {
     0x26, 0xff, 0x00,              //   LOGICAL_MAXIMUM (255)
     0x95, 0x0a,                    //   REPORT_COUNT (10)
     0x75, 0x08,                    //   REPORT_SIZE (8)
-    0x81, 0x02,                    //   INPUT (Data,Var,Abs)
+    0x91, 0x02,                    //   OUTPUT (Data,Var,Abs)
     0xc0                           // END_COLLECTION
 };
 
@@ -113,8 +113,8 @@ uint8_t config_descriptor[59] = {
     /* 配置描述符 9B */
     0x09, // 配置描述符的字节数大小(bLength)
     0x02, // 配置描述符的类型(bDescriptorType)
-    0x22,0x00, // 返回整个数据的长度.指此配置返回的配置描述符,接口描述符以及端点描述符的全部大小(wTotalLength)
-    0x01, // 此配置所支持的接口数量(bNumInterfaces)
+    0x3B,0x00, // 返回整个数据的长度.指此配置返回的配置描述符,接口描述符以及端点描述符的全部大小(wTotalLength)
+    0x02, // 此配置所支持的接口数量(bNumInterfaces)
     0x01, // Set_Configuration命令需要的参数值(bConfigurationValue)
     0x00, // 描述该配置的字符串的索引值(iConfiguration)
     0xA0, // 供电模式的选择(Bit4-0保留,D7:总线供电,D6:自供电,D5:远程唤醒)(bmAttributes)
@@ -147,7 +147,7 @@ uint8_t config_descriptor[59] = {
     /* 接口描述符 9B */
     0x09, // 设备描述符的字节数大小(bLength)
     0x04, // 接口描述符的类型(bDescriptorType)
-    0x00, // 接口编号(bInterfaceNumber)
+    0x01, // 接口编号(bInterfaceNumber)
     0x00, // 描述符的索引值(bAlternateSetting)
     0x01, // 该接口使用端点数(bNumEndpoints)
     0x03, // 类型代码(bInterfaceClass)
@@ -176,9 +176,11 @@ static uint8_t HIDKey[9] = {0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0};  // 1B-ReportI
 static uint8_t HIDKey_last[9] = {0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0};
 static uint8_t HIDKey_extend[14] = {0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0}; // 1B-ReportID, 13B-KeyCode
 static uint8_t HIDKey_extend_last[14] = {0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0};
+static uint8_t HID_out_info[11] = {0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0};
 static uint8_t hid_key_index = 3;  // 从第3个开始
-static uint8_t SetupReq = 0,SetupLen = 0,Ready = 0,Count = 0,edp0_idle = 0,UsbConfig = 0;
+static uint8_t SetupReq = 0,SetupLen = 0,Ready = 0,Count = 0,UsbConfig = 0;
 static uint8_t LED_VALID = 0;
+static bool edp1_idle = 0, out_info_flag = 0;
 static uint8_t *pDescr; // USB配置标志
 //static USB_SETUP_REQ   SetupReqBuf; // 暂存Setup包
 
@@ -194,12 +196,17 @@ void usb_device_init(void)
 {
     IE_USB = 0;                                                                // 关闭USB中断
 	USB_CTRL = 0x00;                                                           // 先设定USB设备模式
+    // EndPoint 0
     UEP0_DMA = Ep0Buffer;                                                      //端点0数据传输地址
+    UEP0_CTRL = UEP_R_RES_ACK | UEP_T_RES_NAK;                                 //OUT事务返回ACK，IN事务返回NAK
+    // EndPoint 1
     UEP1_DMA = Ep1Buffer;                                                      //端点1数据传输地址
     UEP4_1_MOD = ~(bUEP4_RX_EN | bUEP4_TX_EN | bUEP1_RX_EN | bUEP1_BUF_MOD) | bUEP4_TX_EN;;   //端点1单64字节收发缓冲区,端点0收发
-    UEP0_CTRL = UEP_R_RES_ACK | UEP_T_RES_NAK;                                 //OUT事务返回ACK，IN事务返回NAK
     UEP1_CTRL = bUEP_T_TOG | UEP_T_RES_NAK;                                    //IN事务返回NAK，OUT事务返回ACK
-
+    // EndPoint 2
+    UEP2_DMA = Ep2Buffer;                                                      //
+    UEP2_3_MOD = UEP2_3_MOD & ~bUEP2_BUF_MOD | bUEP2_RX_EN;                    //端点2发送使能 64字节缓冲区
+    // Other Init
     USB_DEV_AD = 0x00;
     UDEV_CTRL = bUD_PD_DIS;                                                    // 禁止DP/DM下拉电阻
     USB_CTRL = bUC_DEV_PU_EN | bUC_INT_BUSY | bUC_DMA_EN;                      // 启动USB设备及DMA，在中断期间中断标志未清除前自动返回NAK
@@ -235,16 +242,18 @@ void device_interrupt(void) interrupt INT_NO_USB using 1                        
     {
         switch (USB_INT_ST & (MASK_UIS_TOKEN | MASK_UIS_ENDP))
         {
-        case UIS_TOKEN_IN | 2:                                                  //endpoint 2# 中断端点上传
-            UEP2_T_LEN = 0;                                                     //预使用发送长度一定要清空
-//            UEP1_CTRL ^= bUEP_T_TOG;                                          //如果不设置自动翻转则需要手动翻转
-            UEP2_CTRL = UEP2_CTRL & ~ MASK_UEP_T_RES | UEP_T_RES_NAK;           //默认应答NAK
+        case UIS_TOKEN_OUT | 2:                                                 //endpoint 2# 中断端点下传
+            len = USB_RX_LEN;
+            memcpy(HID_out_info, Ep2Buffer, len);
+            memset(Ep2Buffer, 0, len);
+            UEP2_CTRL = UEP2_CTRL & ~ MASK_UEP_R_RES | UEP_R_RES_NAK;
+            out_info_flag = 1;
             break;
         case UIS_TOKEN_IN | 1:                                                  //endpoint 1# 中断端点上传
             UEP1_T_LEN = 0;                                                     //预使用发送长度一定要清空
 //            UEP2_CTRL ^= bUEP_T_TOG;                                          //如果不设置自动翻转则需要手动翻转
             UEP1_CTRL = UEP1_CTRL & ~ MASK_UEP_T_RES | UEP_T_RES_NAK;           //默认应答NAK
-            edp0_idle = 1;                                                           /*传输完成标志*/
+            edp1_idle = 1;                                                           /*传输完成标志*/
             break;
         case UIS_TOKEN_SETUP | 0:                                                //SETUP事务
             len = USB_RX_LEN;
@@ -294,17 +303,14 @@ void device_interrupt(void) interrupt INT_NO_USB using 1                        
                             len = sizeof(config_descriptor);
                             break;
                         case 0x22:                                          //报表描述符
-                            if(UsbSetupBuf->wIndexL == 0)                   //接口0报表描述符
-                            {
-                                pDescr = hid_report_descriptor_1;                        //数据准备上传
+                            if(UsbSetupBuf->wIndexL == 0) {                 //接口0报表描述符
+                                pDescr = hid_report_descriptor_1;           //数据准备上传
                                 len = sizeof(hid_report_descriptor_1);
+                            }else if (UsbSetupBuf->wIndexL == 1){
+                                pDescr = hid_report_descriptor_2;
+                                len = sizeof(hid_report_descriptor_2);
                                 Ready = 1;                                  //如果有更多接口，该标准位应该在最后一个接口配置完成后有效
-                                #if defined(DEBUG_UART_ISR)
-                                ES = 1;                                     //开启串口中断
-                                #endif
-                            }
-                            else
-                            {
+                            }else {
                                 len = 0xff;                                 //本程序只有2个接口，这句话正常不可能执行
                             }
                             break;
@@ -488,7 +494,7 @@ void device_interrupt(void) interrupt INT_NO_USB using 1                        
     {
         UEP0_CTRL = UEP_R_RES_ACK | UEP_T_RES_NAK;
         UEP1_CTRL = bUEP_AUTO_TOG | UEP_R_RES_ACK;
-        UEP2_CTRL = bUEP_AUTO_TOG | UEP_R_RES_ACK | UEP_T_RES_NAK;
+        UEP2_CTRL = bUEP_AUTO_TOG | UEP_T_RES_ACK | UEP_R_RES_NAK;
         USB_DEV_AD = 0x00;
         UIF_SUSPEND = 0;
         UIF_TRANSFER = 0;
@@ -513,7 +519,7 @@ void device_interrupt(void) interrupt INT_NO_USB using 1                        
 void usb_clear_flag(void)
 {
     UEP1_T_LEN = 0;                                                       //预使用发送长度一定要清空
-    edp0_idle = 0;
+    edp1_idle = 0;
     Ready = 0;
 	LED_VALID = 1;                                                        //给一个默认值
 }
@@ -599,10 +605,19 @@ void keycode_fill_report(key_code_enum keycode)
     }
 }
 
-void test_comm(void)
+void test_comm(uint8_t *usb_data)
 {
-    uint8_t test_data[10] = {0x03, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09};
+    uint8_t test_data[11] = {0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0};
+    memcpy(test_data, usb_data, sizeof(test_data));
     ENP1_IN_EVT(test_data, sizeof(test_data));
+}
+
+void info_rec_test(void)
+{
+    if (out_info_flag){
+        out_info_flag = 0;
+        test_comm(HID_out_info);
+    }
 }
 /*******************************************************************************
 * Function Name  : keycode_input_proc()
@@ -621,6 +636,5 @@ void keycode_input_proc(void)
     }
     __keycode_clear_report();
     __keycode_clear_report_extend();
-    test_comm();
 }
 
