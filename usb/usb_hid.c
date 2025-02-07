@@ -74,23 +74,36 @@ uint8_t hid_report_descriptor_1[] = {
     0x26, 0xff, 0x00,              //   LOGICAL_MAXIMUM (255)
     0x95, 0x0a,                    //   REPORT_COUNT (10)
     0x75, 0x08,                    //   REPORT_SIZE (8)
-    0x81, 0x02,                    //   INPUT (Data,Var,Abs)
-    0xc0,                          // END_COLLECTION
-};
-
-uint8_t hid_report_descriptor_2[] = {
-    0x06, 0x00, 0xff,              // USAGE_PAGE (Vendor Defined Page 1)
-    0x09, 0x02,                    // USAGE (Vendor Usage 2)
-    0xa1, 0x01,                    // COLLECTION (Application)
-    0x85, 0x04,                    //   REPORT_ID (4)
+    0x81, 0x06,                    //   INPUT (Data,Var,Rel)
     0x09, 0x02,                    //   USAGE (Vendor Usage 2)
     0x15, 0x00,                    //   LOGICAL_MINIMUM (0)
     0x26, 0xff, 0x00,              //   LOGICAL_MAXIMUM (255)
     0x95, 0x0a,                    //   REPORT_COUNT (10)
     0x75, 0x08,                    //   REPORT_SIZE (8)
-    0x91, 0x02,                    //   OUTPUT (Data,Var,Abs)
-    0xc0                           // END_COLLECTION
+    0x91, 0x06,                    //   OUTPUT (Data,Var,Rel)
+    0xc0,                          // END_COLLECTION
 };
+
+// uint8_t hid_report_descriptor_2[] = {
+//     /* 通信 */
+//     0x06, 0x00, 0xff,              // USAGE_PAGE (Vendor Defined Page 1)
+//     0x09, 0x01,                    // USAGE (Vendor Usage 1)
+//     0xa1, 0x01,                    // COLLECTION (Application)
+//     0x85, 0x03,                    //   REPORT_ID (3)
+//     0x09, 0x02,                    //   USAGE (Vendor Usage 2)
+//     0x15, 0x00,                    //   LOGICAL_MINIMUM (0)
+//     0x26, 0xff, 0x00,              //   LOGICAL_MAXIMUM (255)
+//     0x95, 0x0a,                    //   REPORT_COUNT (10)
+//     0x75, 0x08,                    //   REPORT_SIZE (8)
+//     0x81, 0x06,                    //   INPUT (Data,Var,Rel)
+//     0x09, 0x02,                    //   USAGE (Vendor Usage 2)
+//     0x15, 0x00,                    //   LOGICAL_MINIMUM (0)
+//     0x26, 0xff, 0x00,              //   LOGICAL_MAXIMUM (255)
+//     0x95, 0x0a,                    //   REPORT_COUNT (10)
+//     0x75, 0x08,                    //   REPORT_SIZE (8)
+//     0x91, 0x06,                    //   OUTPUT (Data,Var,Rel)
+//     0xc0,                          // END_COLLECTION
+// };
 
 uint8_t device_descriptor[18] = {
     0x12, // 设备描述符的字节数大小(bLength)
@@ -114,7 +127,7 @@ uint8_t config_descriptor[59] = {
     0x09, // 配置描述符的字节数大小(bLength)
     0x02, // 配置描述符的类型(bDescriptorType)
     0x3B,0x00, // 返回整个数据的长度.指此配置返回的配置描述符,接口描述符以及端点描述符的全部大小(wTotalLength)
-    0x02, // 此配置所支持的接口数量(bNumInterfaces)
+    0x01, // 此配置所支持的接口数量(bNumInterfaces)
     0x01, // Set_Configuration命令需要的参数值(bConfigurationValue)
     0x00, // 描述该配置的字符串的索引值(iConfiguration)
     0xA0, // 供电模式的选择(Bit4-0保留,D7:总线供电,D6:自供电,D5:远程唤醒)(bmAttributes)
@@ -144,31 +157,13 @@ uint8_t config_descriptor[59] = {
     0x03, // 端点方向(bmAttributes)
     THIS_ENDP1_SIZE,0x00, // 本端点接收或发送的最大信息包大小(wMaxPacketSize)
     0x01, // 端点间隔时间(bInterval)
-    /* 接口描述符 9B */
-    0x09, // 设备描述符的字节数大小(bLength)
-    0x04, // 接口描述符的类型(bDescriptorType)
-    0x01, // 接口编号(bInterfaceNumber)
-    0x00, // 描述符的索引值(bAlternateSetting)
-    0x01, // 该接口使用端点数(bNumEndpoints)
-    0x03, // 类型代码(bInterfaceClass)
-    0x00, // 子类代码(bInterfaceSubClass)
-    0x00, // 协议代码(bInterfaceProtocol)
-    0x00, // 字符串描述符的索引(iInterface)
-    /* HID描述符 9B */
-    0x09, // 设备描述符的字节数大小(bLength)
-    0x21, // HID描述符的类型(bDescriptorType)
-    0x11,0x01, // HID规范版本号(bcdHID,为1.11)
-    0x00, // 国家代码(bCountryCode)
-    0x01, // 类别描述符数目(至少有一个报表描述符)(bNumDescriptors)
-    0x22, // 该类别描述符的类型(bDescriptorType)
-    LOW_BYTE(hid_report_descriptor_2),HIGH_BYTE(hid_report_descriptor_2), // 该类别描述符的总长度(wDescriptorLength)
     /* 端点描述符 7B */
     0x07, // 端点描述符的字节数大小(bLength)
     0x05, // 端点描述符的类型(bDescriptorType)
     0x02, // USB设备的端点地址(bEndpointAddress)
     0x03, // 端点方向(bmAttributes)
     THIS_ENDP2_SIZE,0x00, // 本端点接收或发送的最大信息包大小(wMaxPacketSize)
-    0x0a, // 端点间隔时间(bInterval)
+    0x01, // 端点间隔时间(bInterval)
 };
 
 /*键盘数据*/
@@ -180,7 +175,7 @@ static uint8_t HID_out_info[11] = {0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 
 static uint8_t hid_key_index = 3;  // 从第3个开始
 static uint8_t SetupReq = 0,SetupLen = 0,Ready = 0,Count = 0,UsbConfig = 0;
 static uint8_t LED_VALID = 0;
-static bool edp1_idle = 0, out_info_flag = 0;
+volatile bool edp1_idle = 0, out_info_flag = 0;
 static uint8_t *pDescr; // USB配置标志
 //static USB_SETUP_REQ   SetupReqBuf; // 暂存Setup包
 
@@ -230,7 +225,6 @@ void enp1_in_evt(uint8_t usb_data[], uint8_t len)
     UEP1_T_LEN = len;                                                        //上传数据长度
     UEP1_CTRL = UEP1_CTRL & ~ MASK_UEP_T_RES | UEP_T_RES_ACK;                //有数据时上传数据并应答ACK
 }
-
 /*******************************************************************************
 * Function Name  : device_interrupt()
 * Description    : CH554USB中断处理函数
@@ -243,11 +237,14 @@ void device_interrupt(void) interrupt INT_NO_USB using 1                        
         switch (USB_INT_ST & (MASK_UIS_TOKEN | MASK_UIS_ENDP))
         {
         case UIS_TOKEN_OUT | 2:                                                 //endpoint 2# 中断端点下传
-            len = USB_RX_LEN;
-            memcpy(HID_out_info, Ep2Buffer, len);
-            memset(Ep2Buffer, 0, len);
-            UEP2_CTRL = UEP2_CTRL & ~ MASK_UEP_R_RES | UEP_R_RES_NAK;
-            out_info_flag = 1;
+            if ( U_TOG_OK )                                                     // 不同步的数据包将丢弃
+            {
+				len = USB_RX_LEN;                                               //接收数据长度，数据从Ep2Buffer首地址开始存放
+                //UEP2_CTRL ^= bUEP_R_TOG;                                        //手动翻转
+				memcpy(HID_out_info, Ep2Buffer, len);
+                UEP2_CTRL = UEP2_CTRL & ~ MASK_UEP_R_RES | UEP_R_RES_NAK;       //默认应答NAK
+                out_info_flag = 1;
+            }
             break;
         case UIS_TOKEN_IN | 1:                                                  //endpoint 1# 中断端点上传
             UEP1_T_LEN = 0;                                                     //预使用发送长度一定要清空
@@ -306,10 +303,11 @@ void device_interrupt(void) interrupt INT_NO_USB using 1                        
                             if(UsbSetupBuf->wIndexL == 0) {                 //接口0报表描述符
                                 pDescr = hid_report_descriptor_1;           //数据准备上传
                                 len = sizeof(hid_report_descriptor_1);
-                            }else if (UsbSetupBuf->wIndexL == 1){
-                                pDescr = hid_report_descriptor_2;
-                                len = sizeof(hid_report_descriptor_2);
                                 Ready = 1;                                  //如果有更多接口，该标准位应该在最后一个接口配置完成后有效
+                            // }else if (UsbSetupBuf->wIndexL == 1){
+                            //     pDescr = hid_report_descriptor_2;
+                            //     len = sizeof(hid_report_descriptor_2);
+                            //     Ready = 1;                                  //如果有更多接口，该标准位应该在最后一个接口配置完成后有效
                             }else {
                                 len = 0xff;                                 //本程序只有2个接口，这句话正常不可能执行
                             }
@@ -494,7 +492,7 @@ void device_interrupt(void) interrupt INT_NO_USB using 1                        
     {
         UEP0_CTRL = UEP_R_RES_ACK | UEP_T_RES_NAK;
         UEP1_CTRL = bUEP_AUTO_TOG | UEP_R_RES_ACK;
-        UEP2_CTRL = bUEP_AUTO_TOG | UEP_T_RES_ACK | UEP_R_RES_NAK;
+        UEP2_CTRL = bUEP_AUTO_TOG | UEP_T_RES_NAK | UEP_R_RES_ACK;
         USB_DEV_AD = 0x00;
         UIF_SUSPEND = 0;
         UIF_TRANSFER = 0;

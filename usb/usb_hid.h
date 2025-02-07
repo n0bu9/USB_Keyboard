@@ -11,6 +11,8 @@
                                         edp1_idle = 0;\
                                     } while (0);
 
+#define ENP_2_OUT_EVT()
+
 #define HIGH_BYTE(hid_report)   ((sizeof(hid_report)) >> 8  )
 #define LOW_BYTE(hid_report)    ((sizeof(hid_report)) & 0xFF)
 
