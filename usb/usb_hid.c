@@ -122,11 +122,11 @@ uint8_t device_descriptor[18] = {
     0x01, // 配置数量(bNumConfigurations)
 };
 
-uint8_t config_descriptor[59] = {
+uint8_t config_descriptor[41] = {
     /* 配置描述符 9B */
     0x09, // 配置描述符的字节数大小(bLength)
     0x02, // 配置描述符的类型(bDescriptorType)
-    0x3B,0x00, // 返回整个数据的长度.指此配置返回的配置描述符,接口描述符以及端点描述符的全部大小(wTotalLength)
+    0x29,0x00, // 返回整个数据的长度.指此配置返回的配置描述符,接口描述符以及端点描述符的全部大小(wTotalLength)
     0x01, // 此配置所支持的接口数量(bNumInterfaces)
     0x01, // Set_Configuration命令需要的参数值(bConfigurationValue)
     0x00, // 描述该配置的字符串的索引值(iConfiguration)
@@ -137,7 +137,7 @@ uint8_t config_descriptor[59] = {
     0x04, // 接口描述符的类型(bDescriptorType)
     0x00, // 接口编号(bInterfaceNumber)
     0x00, // 描述符的索引值(bAlternateSetting)
-    0x01, // 该接口使用端点数(bNumEndpoints)
+    0x02, // 该接口使用端点数(bNumEndpoints)
     0x03, // 类型代码(bInterfaceClass)
     0x00, // 子类代码(bInterfaceSubClass)
     0x00, // 协议代码(bInterfaceProtocol)
@@ -196,11 +196,12 @@ void usb_device_init(void)
     UEP0_CTRL = UEP_R_RES_ACK | UEP_T_RES_NAK;                                 //OUT事务返回ACK，IN事务返回NAK
     // EndPoint 1
     UEP1_DMA = Ep1Buffer;                                                      //端点1数据传输地址
-    UEP4_1_MOD = ~(bUEP4_RX_EN | bUEP4_TX_EN | bUEP1_RX_EN | bUEP1_BUF_MOD) | bUEP4_TX_EN;;   //端点1单64字节收发缓冲区,端点0收发
-    UEP1_CTRL = bUEP_T_TOG | UEP_T_RES_NAK;                                    //IN事务返回NAK，OUT事务返回ACK
+    UEP4_1_MOD = UEP4_1_MOD & ~bUEP1_BUF_MOD | bUEP1_TX_EN;                    //端点1单64字节发送(IN)缓冲区
+    UEP1_CTRL = bUEP_AUTO_TOG | UEP_T_RES_NAK;                                 // 端点2自动翻转同步标志位，IN事务返回NAK，OUT返回ACK
     // EndPoint 2
     UEP2_DMA = Ep2Buffer;                                                      //
     UEP2_3_MOD = UEP2_3_MOD & ~bUEP2_BUF_MOD | bUEP2_RX_EN;                    //端点2发送使能 64字节缓冲区
+    UEP2_CTRL = bUEP_AUTO_TOG | UEP_T_RES_NAK | UEP_R_RES_ACK;                 // 端点2自动翻转同步标志位，IN事务返回NAK，OUT返回ACK
     // Other Init
     USB_DEV_AD = 0x00;
     UDEV_CTRL = bUD_PD_DIS;                                                    // 禁止DP/DM下拉电阻
@@ -240,7 +241,7 @@ void device_interrupt(void) interrupt INT_NO_USB using 1                        
             if ( U_TOG_OK )                                                     // 不同步的数据包将丢弃
             {
 				len = USB_RX_LEN;                                               //接收数据长度，数据从Ep2Buffer首地址开始存放
-                //UEP2_CTRL ^= bUEP_R_TOG;                                        //手动翻转
+                //UEP2_CTRL ^= bUEP_R_TOG;                                      //手动翻转
 				memcpy(HID_out_info, Ep2Buffer, len);
                 UEP2_CTRL = UEP2_CTRL & ~ MASK_UEP_R_RES | UEP_R_RES_NAK;       //默认应答NAK
                 out_info_flag = 1;
@@ -257,10 +258,6 @@ void device_interrupt(void) interrupt INT_NO_USB using 1                        
             if(len == (sizeof(USB_SETUP_REQ)))
             {
                 SetupLen = UsbSetupBuf->wLengthL;
-                if(UsbSetupBuf->wLengthH || SetupLen > 0x7F)
-                {
-                    SetupLen = 0x7F;    // 限制总长度
-                }
                 len = 0;                                                        // 默认为成功并且上传0长度
                 SetupReq = UsbSetupBuf->bRequest;
                 if ((UsbSetupBuf->bRequestType & USB_REQ_TYP_MASK) != USB_REQ_TYP_STANDARD) /* HID类命令 */
@@ -491,12 +488,13 @@ void device_interrupt(void) interrupt INT_NO_USB using 1                        
     if(UIF_BUS_RST)                                                       //设备模式USB总线复位中断
     {
         UEP0_CTRL = UEP_R_RES_ACK | UEP_T_RES_NAK;
-        UEP1_CTRL = bUEP_AUTO_TOG | UEP_R_RES_ACK;
-        UEP2_CTRL = bUEP_AUTO_TOG | UEP_T_RES_NAK | UEP_R_RES_ACK;
+        UEP1_CTRL = bUEP_AUTO_TOG | UEP_T_RES_NAK;
+        UEP2_CTRL = bUEP_AUTO_TOG | UEP_T_RES_NAK | UEP_R_RES_ACK;       // 端点2自动翻转同步标志位，IN事务返回NAK，OUT返回ACK
         USB_DEV_AD = 0x00;
         UIF_SUSPEND = 0;
         UIF_TRANSFER = 0;
         UIF_BUS_RST = 0;                                                 //清中断标志
+
     }
     if (UIF_SUSPEND)                                                     //USB总线挂起/唤醒完成
     {
