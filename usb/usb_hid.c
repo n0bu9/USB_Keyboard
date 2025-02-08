@@ -197,11 +197,11 @@ void usb_device_init(void)
     // EndPoint 1
     UEP1_DMA = Ep1Buffer;                                                      //端点1数据传输地址
     UEP4_1_MOD = UEP4_1_MOD & ~bUEP1_BUF_MOD | bUEP1_TX_EN;                    //端点1单64字节发送(IN)缓冲区
-    UEP1_CTRL = bUEP_AUTO_TOG | UEP_T_RES_NAK;                                 // 端点2自动翻转同步标志位，IN事务返回NAK，OUT返回ACK
+    UEP1_CTRL = bUEP_AUTO_TOG | UEP_T_RES_NAK | UEP_R_RES_STALL;               // 端点2自动翻转同步标志位，IN事务返回NAK，OUT返回STALL
     // EndPoint 2
     UEP2_DMA = Ep2Buffer;                                                      //
-    UEP2_3_MOD = UEP2_3_MOD & ~bUEP2_BUF_MOD | bUEP2_RX_EN;                    //端点2发送使能 64字节缓冲区
-    UEP2_CTRL = bUEP_AUTO_TOG | UEP_T_RES_NAK | UEP_R_RES_ACK;                 // 端点2自动翻转同步标志位，IN事务返回NAK，OUT返回ACK
+    UEP2_3_MOD = UEP2_3_MOD & ~bUEP2_BUF_MOD | bUEP2_RX_EN;                    // 端点2发送使能 64字节缓冲区
+    UEP2_CTRL = bUEP_AUTO_TOG | UEP_T_RES_STALL | UEP_R_RES_ACK;               // 端点2自动翻转同步标志位，IN事务返回STALL，OUT返回ACK
     // Other Init
     USB_DEV_AD = 0x00;
     UDEV_CTRL = bUD_PD_DIS;                                                    // 禁止DP/DM下拉电阻
@@ -243,7 +243,7 @@ void device_interrupt(void) interrupt INT_NO_USB using 1                        
 				len = USB_RX_LEN;                                               //接收数据长度，数据从Ep2Buffer首地址开始存放
                 //UEP2_CTRL ^= bUEP_R_TOG;                                      //手动翻转
 				memcpy(HID_out_info, Ep2Buffer, len);
-                UEP2_CTRL = UEP2_CTRL & ~ MASK_UEP_R_RES | UEP_R_RES_NAK;       //默认应答NAK
+                UEP2_CTRL = UEP2_CTRL & ~ MASK_UEP_R_RES | UEP_R_RES_ACK;       //默认应答ACK
                 out_info_flag = 1;
             }
             break;
@@ -251,7 +251,7 @@ void device_interrupt(void) interrupt INT_NO_USB using 1                        
             UEP1_T_LEN = 0;                                                     //预使用发送长度一定要清空
 //            UEP2_CTRL ^= bUEP_T_TOG;                                          //如果不设置自动翻转则需要手动翻转
             UEP1_CTRL = UEP1_CTRL & ~ MASK_UEP_T_RES | UEP_T_RES_NAK;           //默认应答NAK
-            edp1_idle = 1;                                                           /*传输完成标志*/
+            edp1_idle = 1;                                                      /*传输完成标志*/
             break;
         case UIS_TOKEN_SETUP | 0:                                                //SETUP事务
             len = USB_RX_LEN;
@@ -488,8 +488,8 @@ void device_interrupt(void) interrupt INT_NO_USB using 1                        
     if(UIF_BUS_RST)                                                       //设备模式USB总线复位中断
     {
         UEP0_CTRL = UEP_R_RES_ACK | UEP_T_RES_NAK;
-        UEP1_CTRL = bUEP_AUTO_TOG | UEP_T_RES_NAK;
-        UEP2_CTRL = bUEP_AUTO_TOG | UEP_T_RES_NAK | UEP_R_RES_ACK;       // 端点2自动翻转同步标志位，IN事务返回NAK，OUT返回ACK
+        UEP1_CTRL = bUEP_AUTO_TOG | UEP_T_RES_NAK | UEP_R_RES_STALL;
+        UEP2_CTRL = bUEP_AUTO_TOG | UEP_T_RES_STALL | UEP_R_RES_ACK;      // 端点2自动翻转同步标志位，IN事务返回STALL，OUT返回ACK
         USB_DEV_AD = 0x00;
         UIF_SUSPEND = 0;
         UIF_TRANSFER = 0;
