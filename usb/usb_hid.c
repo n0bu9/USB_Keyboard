@@ -601,22 +601,13 @@ void keycode_fill_report(key_code_enum keycode)
     }
 }
 
-void test_comm(uint8_t *usb_data)
-{
-    uint8_t test_data[11] = {0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0};
-    if (test_data[0] == 0x03){
-        // Report ID 为0x03
-        memcpy(test_data, usb_data, sizeof(test_data));
-        ENP1_IN_EVT(test_data, sizeof(test_data));
-    }
-}
-
-void info_rec_test(void)
+void keyboard_info_get(uint8_t *buff)
 {
     if (out_info_flag){
         out_info_flag = 0;
-        test_comm(HID_out_info);
-        memset(HID_out_info, 0, sizeof(HID_out_info));
+        if (HID_out_info[0] == 0x03){
+            memcpy(buff, HID_out_info + sizeof(uint8_t), sizeof(uint8_t)*10);
+        }
     }
 }
 /*******************************************************************************

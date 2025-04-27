@@ -22,6 +22,6 @@ void usb_clear_flag(void);
 void keycode_fill_report(key_code_enum keycode);
 void keycode_input_proc(void);
 
-void info_rec_test(void);
+void keyboard_info_get(uint8_t *buff);
 
 #endif  // __USB_HID_H__

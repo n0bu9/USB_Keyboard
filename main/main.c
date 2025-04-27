@@ -14,6 +14,8 @@
 
 #pragma  NOAREGS
 
+uint8_t keyboard_ctrl[10];
+
 void led_flash_proc(void)
 {
     static uint16_t time = 0;
@@ -75,6 +77,22 @@ void keyboard_proc(void)
     }
 }
 
+void keyboard_ctrl_porc(void)
+{
+    keyboard_info_get(keyboard_ctrl);  // 获取控制命令
+    
+    if (0xA5 == keyboard_ctrl[0]){  // 帧头校验
+        switch (keyboard_ctrl[1])   // 功能码匹配
+        {
+        case 0x05:
+            
+            break;
+        
+        default:
+            break;
+        }
+    }
+}
 
 void main( )
 {
@@ -99,7 +117,7 @@ void main( )
         // led_flash_proc();
         // uart_debug_proc();
         keyboard_proc();
-        info_rec_test();
+        keyboard_ctrl_porc();
 
         wdt_feed();                                                           //喂狗
     }
